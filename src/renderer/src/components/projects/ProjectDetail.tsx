@@ -3,7 +3,10 @@ import { Archive, MoreVertical, Pencil, Trash2 } from 'lucide-react';
 import { useProjects } from '@renderer/context/ProjectsContext';
 import { ProjectIcon } from '@renderer/components/projects/ProjectIcon';
 import { ProjectModal } from '@renderer/components/projects/ProjectModal';
+import { ConfirmModal } from '@renderer/components/ui/ConfirmModal';
 import { DropdownMenu } from '@renderer/components/ui/DropdownMenu';
+
+type ConfirmAction = 'archive' | 'delete' | null;
 
 function formatDate(value: string): string {
   return new Intl.DateTimeFormat(undefined, {
@@ -16,9 +19,11 @@ function formatDate(value: string): string {
 export function ProjectDetail() {
   const { selectedProject, updateProject, deleteProject, selectProject } = useProjects();
   const [editModalOpen, setEditModalOpen] = useState(false);
+  const [confirmAction, setConfirmAction] = useState<ConfirmAction>(null);
 
   useEffect(() => {
     setEditModalOpen(false);
+    setConfirmAction(null);
   }, [selectedProject?.id]);
 
   if (!selectedProject) {
@@ -72,8 +77,13 @@ export function ProjectDetail() {
             trigger={<MoreVertical aria-hidden="true" className="size-4" strokeWidth={1.75} />}
             items={[
               { label: 'Edit', icon: Pencil, onClick: () => setEditModalOpen(true) },
-              { label: 'Archive', icon: Archive, onClick: handleArchive },
-              { label: 'Delete', icon: Trash2, onClick: handleDelete, destructive: true },
+              { label: 'Archive', icon: Archive, onClick: () => setConfirmAction('archive') },
+              {
+                label: 'Delete',
+                icon: Trash2,
+                onClick: () => setConfirmAction('delete'),
+                destructive: true,
+              },
             ]}
           />
         </div>
@@ -114,6 +124,25 @@ export function ProjectDetail() {
         project={selectedProject}
         open={editModalOpen}
         onClose={() => setEditModalOpen(false)}
+      />
+
+      <ConfirmModal
+        open={confirmAction === 'archive'}
+        title={`Archive ${selectedProject.name}?`}
+        description="This project will be removed from your sidebar. You can restore archived projects later."
+        confirmLabel="Archive project"
+        onClose={() => setConfirmAction(null)}
+        onConfirm={handleArchive}
+      />
+
+      <ConfirmModal
+        open={confirmAction === 'delete'}
+        title={`Delete ${selectedProject.name}?`}
+        description="This action cannot be undone. The project and everything inside it will be permanently removed."
+        confirmLabel="Delete project"
+        destructive
+        onClose={() => setConfirmAction(null)}
+        onConfirm={handleDelete}
       />
     </div>
   );
