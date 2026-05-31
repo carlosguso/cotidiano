@@ -6,6 +6,7 @@ import {
 } from '@renderer/lib/projectColors';
 import { ProjectIcon } from '@renderer/components/projects/ProjectIcon';
 import { Button } from '@renderer/components/ui/Button';
+import { DropdownMenu, MoreVerticalIcon } from '@renderer/components/ui/DropdownMenu';
 import { Textarea } from '@renderer/components/ui/Textarea';
 import type { ProjectColor } from '@renderer/types/project';
 
@@ -99,12 +100,15 @@ export function ProjectDetail() {
                 Save changes
               </Button>
             ) : null}
-            <Button variant="secondary" onClick={handleArchive}>
-              Archive
-            </Button>
-            <Button variant="danger" onClick={handleDelete}>
-              Delete
-            </Button>
+            <DropdownMenu
+              align="end"
+              ariaLabel="Project actions"
+              trigger={<MoreVerticalIcon />}
+              items={[
+                { label: 'Archive', onClick: handleArchive },
+                { label: 'Delete', onClick: handleDelete, destructive: true },
+              ]}
+            />
           </div>
         </div>
       </header>
