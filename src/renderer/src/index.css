@@ -1,11 +1,30 @@
 @import 'tailwindcss';
 
 @layer base {
-  body {
-    @apply flex min-h-screen items-center justify-center bg-[#1a1a2e] font-sans text-[#eee];
+  * {
+    @apply border-zinc-800;
   }
 
+  html,
+  body,
   #root {
-    @apply w-full;
+    @apply h-full;
+  }
+
+  body {
+    @apply overflow-hidden bg-zinc-950 font-sans text-zinc-100 antialiased;
+  }
+
+  button,
+  input,
+  textarea {
+    font: inherit;
+  }
+}
+
+@layer utilities {
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(63 63 70) transparent;
   }
 }
