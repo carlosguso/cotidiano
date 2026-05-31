@@ -1,19 +1,11 @@
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
-}
+@import 'tailwindcss';
 
-body {
-  font-family: system-ui, -apple-system, sans-serif;
-  background: #1a1a2e;
-  color: #eee;
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
+@layer base {
+  body {
+    @apply flex min-h-screen items-center justify-center bg-[#1a1a2e] font-sans text-[#eee];
+  }
 
-#root {
-  width: 100%;
+  #root {
+    @apply w-full;
+  }
 }
