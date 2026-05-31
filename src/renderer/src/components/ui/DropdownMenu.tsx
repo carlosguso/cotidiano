@@ -1,7 +1,9 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
+import type { LucideIcon } from 'lucide-react';
 
 export type DropdownMenuItem = {
   label: string;
+  icon: LucideIcon;
   onClick: () => void;
   destructive?: boolean;
 };
@@ -63,38 +65,28 @@ export function DropdownMenu({ trigger, items, align = 'end', ariaLabel }: Dropd
             align === 'end' ? 'right-0' : 'left-0'
           }`}
         >
-          {items.map((item) => (
-            <button
-              key={item.label}
-              type="button"
-              role="menuitem"
-              onClick={() => handleItemClick(item)}
-              className={`flex w-full items-center px-3 py-2 text-left text-sm transition-colors ${
-                item.destructive
-                  ? 'text-red-400 hover:bg-red-950/50 hover:text-red-300'
-                  : 'text-zinc-200 hover:bg-zinc-800 hover:text-zinc-100'
-              }`}
-            >
-              {item.label}
-            </button>
-          ))}
+          {items.map((item) => {
+            const Icon = item.icon;
+
+            return (
+              <button
+                key={item.label}
+                type="button"
+                role="menuitem"
+                onClick={() => handleItemClick(item)}
+                className={`flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition-colors ${
+                  item.destructive
+                    ? 'text-red-400 hover:bg-red-950/50 hover:text-red-300'
+                    : 'text-zinc-200 hover:bg-zinc-800 hover:text-zinc-100'
+                }`}
+              >
+                <Icon aria-hidden="true" className="size-4 shrink-0" strokeWidth={1.75} />
+                {item.label}
+              </button>
+            );
+          })}
         </div>
       ) : null}
     </div>
-  );
-}
-
-export function MoreVerticalIcon() {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 16 16"
-      fill="currentColor"
-      className="size-4"
-    >
-      <circle cx="8" cy="3" r="1.5" />
-      <circle cx="8" cy="8" r="1.5" />
-      <circle cx="8" cy="13" r="1.5" />
-    </svg>
   );
 }

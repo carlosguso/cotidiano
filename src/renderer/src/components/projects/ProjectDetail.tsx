@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
+import { Archive, MoreVertical, Pencil, Trash2 } from 'lucide-react';
 import { useProjects } from '@renderer/context/ProjectsContext';
 import { ProjectIcon } from '@renderer/components/projects/ProjectIcon';
 import { ProjectModal } from '@renderer/components/projects/ProjectModal';
-import { DropdownMenu, MoreVerticalIcon } from '@renderer/components/ui/DropdownMenu';
+import { DropdownMenu } from '@renderer/components/ui/DropdownMenu';
 
 function formatDate(value: string): string {
   return new Intl.DateTimeFormat(undefined, {
@@ -68,11 +69,11 @@ export function ProjectDetail() {
           <DropdownMenu
             align="end"
             ariaLabel="Project actions"
-            trigger={<MoreVerticalIcon />}
+            trigger={<MoreVertical aria-hidden="true" className="size-4" strokeWidth={1.75} />}
             items={[
-              { label: 'Edit', onClick: () => setEditModalOpen(true) },
-              { label: 'Archive', onClick: handleArchive },
-              { label: 'Delete', onClick: handleDelete, destructive: true },
+              { label: 'Edit', icon: Pencil, onClick: () => setEditModalOpen(true) },
+              { label: 'Archive', icon: Archive, onClick: handleArchive },
+              { label: 'Delete', icon: Trash2, onClick: handleDelete, destructive: true },
             ]}
           />
         </div>

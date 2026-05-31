@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
 import { useProjects } from '@renderer/context/ProjectsContext';
 import { ProjectListItem } from '@renderer/components/projects/ProjectListItem';
 import { Button } from '@renderer/components/ui/Button';
@@ -6,25 +7,6 @@ import { Button } from '@renderer/components/ui/Button';
 type SidebarProps = {
   onCreateProject: () => void;
 };
-
-function SidebarToggleIcon({ collapsed }: { collapsed: boolean }) {
-  return (
-    <svg
-      aria-hidden="true"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      className="size-4"
-    >
-      <path
-        d={collapsed ? 'M6 4l4 4-4 4' : 'M10 4L6 8l4 4'}
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
 
 export function Sidebar({ onCreateProject }: SidebarProps) {
   const { activeProjects, selectedProjectId, selectProject } = useProjects();
@@ -124,7 +106,11 @@ export function Sidebar({ onCreateProject }: SidebarProps) {
             collapsed ? 'justify-center' : 'gap-2 px-2'
           }`}
         >
-          <SidebarToggleIcon collapsed={collapsed} />
+          {collapsed ? (
+            <PanelLeftOpen aria-hidden="true" className="size-4" strokeWidth={1.75} />
+          ) : (
+            <PanelLeftClose aria-hidden="true" className="size-4" strokeWidth={1.75} />
+          )}
         </button>
       </div>
     </aside>
