@@ -33,9 +33,19 @@ function now(): string {
   return new Date().toISOString();
 }
 
-export function ProjectsProvider({ children }: { children: ReactNode }) {
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(null);
+export function ProjectsProvider({
+  children,
+  initialProjects = [],
+  initialSelectedProjectId = null,
+}: {
+  children: ReactNode;
+  initialProjects?: Project[];
+  initialSelectedProjectId?: string | null;
+}) {
+  const [projects, setProjects] = useState<Project[]>(initialProjects);
+  const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
+    initialSelectedProjectId,
+  );
 
   const activeProjects = useMemo(
     () =>

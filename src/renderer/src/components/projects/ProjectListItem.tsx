@@ -22,6 +22,7 @@ export function ProjectListItem({
         type="button"
         variant="ghost"
         size="icon-sm"
+        aria-label={project.name}
         title={project.name}
         onClick={() => onSelect(project.id)}
         className={cn('w-full', selected && 'bg-accent text-accent-foreground')}
