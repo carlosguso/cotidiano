@@ -1,0 +1,16 @@
+{
+  "name": "cotidiano",
+  "version": "1.0.0",
+  "description": "A desktop app built with Electron",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron ."
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^35.0.0"
+  }
+}
