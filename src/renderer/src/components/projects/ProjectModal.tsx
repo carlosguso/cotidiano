@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
-import type { ProjectColor } from '@renderer/types/project';
+import type { Project, ProjectColor } from '@renderer/types/project';
 import { useProjects } from '@renderer/context/ProjectsContext';
 import {
   PROJECT_COLOR_CLASSES,
@@ -11,13 +11,17 @@ import { Input } from '@renderer/components/ui/Input';
 import { Textarea } from '@renderer/components/ui/Textarea';
 import { Modal } from '@renderer/components/ui/Modal';
 
-type CreateProjectModalProps = {
+type ProjectModalProps = {
   open: boolean;
   onClose: () => void;
+  project?: Project | null;
 };
 
-export function CreateProjectModal({ open, onClose }: CreateProjectModalProps) {
-  const { createProject, activeProjects } = useProjects();
+const FORM_ID = 'project-form';
+
+export function ProjectModal({ open, onClose, project = null }: ProjectModalProps) {
+  const isEditing = project !== null;
+  const { createProject, updateProject, activeProjects } = useProjects();
   const [name, setName] = useState('');
   const [identifier, setIdentifier] = useState('');
   const [description, setDescription] = useState('');
@@ -27,19 +31,29 @@ export function CreateProjectModal({ open, onClose }: CreateProjectModalProps) {
 
   useEffect(() => {
     if (!open) return;
-    setName('');
-    setIdentifier('');
-    setDescription('');
-    setColor('blue');
-    setIdentifierTouched(false);
+
+    if (isEditing) {
+      setName(project.name);
+      setIdentifier(project.identifier);
+      setDescription(project.description);
+      setColor(project.color);
+      setIdentifierTouched(true);
+    } else {
+      setName('');
+      setIdentifier('');
+      setDescription('');
+      setColor('blue');
+      setIdentifierTouched(false);
+    }
+
     setError(null);
-  }, [open]);
+  }, [open, isEditing, project]);
 
   useEffect(() => {
-    if (!identifierTouched) {
+    if (!isEditing && !identifierTouched) {
       setIdentifier(suggestIdentifier(name));
     }
-  }, [name, identifierTouched]);
+  }, [name, identifierTouched, isEditing]);
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
@@ -58,7 +72,8 @@ export function CreateProjectModal({ open, onClose }: CreateProjectModalProps) {
     }
 
     const identifierTaken = activeProjects.some(
-      (project) => project.identifier === trimmedIdentifier,
+      (entry) =>
+        entry.identifier === trimmedIdentifier && (!isEditing || entry.id !== project.id),
     );
 
     if (identifierTaken) {
@@ -66,32 +81,42 @@ export function CreateProjectModal({ open, onClose }: CreateProjectModalProps) {
       return;
     }
 
-    createProject({
-      name: trimmedName,
-      identifier: trimmedIdentifier,
-      description,
-      color,
-    });
+    if (isEditing) {
+      updateProject(project.id, {
+        name: trimmedName,
+        identifier: trimmedIdentifier,
+        description,
+        color,
+      });
+    } else {
+      createProject({
+        name: trimmedName,
+        identifier: trimmedIdentifier,
+        description,
+        color,
+      });
+    }
+
     onClose();
   };
 
   return (
     <Modal
-      open={open}
-      title="Create project"
+      open={open && (!isEditing || project !== null)}
+      title={isEditing ? 'Edit project' : 'Create project'}
       onClose={onClose}
       footer={
         <>
           <Button variant="ghost" onClick={onClose}>
             Cancel
           </Button>
-          <Button variant="primary" type="submit" form="create-project-form">
-            Create project
+          <Button variant="primary" type="submit" form={FORM_ID}>
+            {isEditing ? 'Save changes' : 'Create project'}
           </Button>
         </>
       }
     >
-      <form id="create-project-form" className="space-y-4" onSubmit={handleSubmit}>
+      <form id={FORM_ID} className="space-y-4" onSubmit={handleSubmit}>
         <Input
           autoFocus
           label="Name"
