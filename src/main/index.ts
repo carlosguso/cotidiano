@@ -1,11 +1,14 @@
 import { app, BrowserWindow } from 'electron';
 import { join } from 'path';
 
+const APP_BACKGROUND = '#09090b';
+
 function createWindow(): void {
   const mainWindow = new BrowserWindow({
     width: 900,
     height: 670,
     show: false,
+    backgroundColor: APP_BACKGROUND,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       contextIsolation: true,
