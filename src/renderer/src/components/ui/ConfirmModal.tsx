@@ -1,5 +1,13 @@
-import { Button } from '@renderer/components/ui/Button';
-import { Modal } from '@renderer/components/ui/Modal';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 
 type ConfirmModalProps = {
   open: boolean;
@@ -20,28 +28,25 @@ export function ConfirmModal({
   onConfirm,
   destructive = false,
 }: ConfirmModalProps) {
-  const handleConfirm = () => {
-    onConfirm();
-    onClose();
-  };
-
   return (
-    <Modal
+    <AlertDialog
       open={open}
-      title={title}
-      onClose={onClose}
-      footer={
-        <>
-          <Button variant="ghost" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button variant={destructive ? 'danger' : 'primary'} onClick={handleConfirm}>
-            {confirmLabel}
-          </Button>
-        </>
-      }
+      onOpenChange={(isOpen) => {
+        if (!isOpen) onClose();
+      }}
     >
-      <p className="text-sm leading-relaxed text-zinc-400">{description}</p>
-    </Modal>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>{title}</AlertDialogTitle>
+          <AlertDialogDescription>{description}</AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter>
+          <AlertDialogCancel>Cancel</AlertDialogCancel>
+          <AlertDialogAction variant={destructive ? 'destructive' : 'default'} onClick={onConfirm}>
+            {confirmLabel}
+          </AlertDialogAction>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
   );
 }

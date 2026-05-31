@@ -1,22 +1,18 @@
-import type { TextareaHTMLAttributes } from 'react';
+import * as React from "react"
 
-type TextareaProps = TextareaHTMLAttributes<HTMLTextAreaElement> & {
-  label?: string;
-  hint?: string;
-};
+import { cn } from "@/lib/utils"
 
-export function Textarea({ label, hint, className = '', id, ...props }: TextareaProps) {
-  const textareaId = id ?? label?.toLowerCase().replace(/\s+/g, '-');
-
+function Textarea({ className, ...props }: React.ComponentProps<"textarea">) {
   return (
-    <label className="block space-y-1.5" htmlFor={textareaId}>
-      {label ? <span className="text-sm font-medium text-zinc-300">{label}</span> : null}
-      <textarea
-        id={textareaId}
-        className={`min-h-24 w-full resize-y rounded-md border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-zinc-100 outline-none transition-colors placeholder:text-zinc-600 focus:border-zinc-500 focus:ring-2 focus:ring-zinc-500/20 ${className}`}
-        {...props}
-      />
-      {hint ? <span className="text-xs text-zinc-500">{hint}</span> : null}
-    </label>
-  );
+    <textarea
+      data-slot="textarea"
+      className={cn(
+        "flex field-sizing-content min-h-16 w-full rounded-md border border-input bg-transparent px-3 py-2 text-base shadow-xs transition-[color,box-shadow] outline-none placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-[3px] focus-visible:ring-ring/50 disabled:cursor-not-allowed disabled:opacity-50 aria-invalid:border-destructive aria-invalid:ring-destructive/20 md:text-sm dark:bg-input/30 dark:aria-invalid:ring-destructive/40",
+        className
+      )}
+      {...props}
+    />
+  )
 }
+
+export { Textarea }

@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { PanelLeftClose, PanelLeftOpen } from 'lucide-react';
+import { PanelLeftClose, PanelLeftOpen, Plus } from 'lucide-react';
 import { useProjects } from '@renderer/context/ProjectsContext';
 import { ProjectListItem } from '@renderer/components/projects/ProjectListItem';
-import { Button } from '@renderer/components/ui/Button';
+import { Button } from '@/components/ui/button';
 
 type SidebarProps = {
   onCreateProject: () => void;
@@ -14,21 +14,21 @@ export function Sidebar({ onCreateProject }: SidebarProps) {
 
   return (
     <aside
-      className={`flex shrink-0 flex-col border-r border-zinc-800 bg-zinc-950 transition-[width] duration-200 ease-out ${
+      className={`flex shrink-0 flex-col border-r border-border bg-sidebar transition-[width] duration-200 ease-out ${
         collapsed ? 'w-14' : 'w-64'
       }`}
     >
       <div
-        className={`flex h-12 items-center border-b border-zinc-800 ${
+        className={`flex h-12 items-center border-b border-sidebar-border ${
           collapsed ? 'justify-center px-2' : 'px-4'
         }`}
       >
         <div className={`flex items-center gap-2 ${collapsed ? 'justify-center' : ''}`}>
-          <span className="inline-flex size-6 shrink-0 items-center justify-center rounded-md bg-zinc-100 text-xs font-bold text-zinc-950">
+          <span className="inline-flex size-6 shrink-0 items-center justify-center rounded-md bg-primary text-xs font-bold text-primary-foreground">
             C
           </span>
           {!collapsed ? (
-            <span className="truncate text-sm font-semibold tracking-tight text-zinc-100">
+            <span className="truncate text-sm font-semibold tracking-tight text-sidebar-foreground">
               Cotidiano
             </span>
           ) : null}
@@ -41,18 +41,19 @@ export function Sidebar({ onCreateProject }: SidebarProps) {
         }`}
       >
         {!collapsed ? (
-          <span className="px-1 text-[11px] font-semibold uppercase tracking-wider text-zinc-500">
+          <span className="px-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
             Projects
           </span>
         ) : null}
         <Button
           variant="ghost"
-          className="size-7 shrink-0 px-0 text-zinc-400 hover:text-zinc-100"
+          size="icon-sm"
+          className="shrink-0 text-muted-foreground"
           onClick={onCreateProject}
           aria-label="Create project"
           title="Create project"
         >
-          +
+          <Plus aria-hidden="true" strokeWidth={1.75} />
         </Button>
       </div>
 
@@ -63,24 +64,28 @@ export function Sidebar({ onCreateProject }: SidebarProps) {
       >
         {activeProjects.length === 0 ? (
           collapsed ? (
-            <button
+            <Button
               type="button"
+              variant="outline"
+              size="icon-sm"
               title="Create your first project"
               onClick={onCreateProject}
-              className="flex w-full items-center justify-center rounded-md border border-dashed border-zinc-800 p-2 text-zinc-500 transition-colors hover:border-zinc-700 hover:text-zinc-300"
+              className="w-full border-dashed text-muted-foreground"
             >
-              <span className="text-sm leading-none">+</span>
-            </button>
+              <Plus aria-hidden="true" strokeWidth={1.75} />
+            </Button>
           ) : (
-            <div className="rounded-md border border-dashed border-zinc-800 px-3 py-4 text-center">
-              <p className="text-xs text-zinc-500">No projects yet</p>
-              <button
+            <div className="rounded-md border border-dashed border-border px-3 py-4 text-center">
+              <p className="text-xs text-muted-foreground">No projects yet</p>
+              <Button
                 type="button"
+                variant="link"
+                size="sm"
                 onClick={onCreateProject}
-                className="mt-2 text-xs font-medium text-zinc-300 hover:text-zinc-100"
+                className="mt-2 h-auto p-0"
               >
                 Create your first project
-              </button>
+              </Button>
             </div>
           )
         ) : (
@@ -96,22 +101,25 @@ export function Sidebar({ onCreateProject }: SidebarProps) {
         )}
       </nav>
 
-      <div className="border-t border-zinc-800 p-2">
-        <button
+      <div className="border-t border-sidebar-border p-2">
+        <Button
           type="button"
+          variant="ghost"
           onClick={() => setCollapsed((current) => !current)}
           aria-label={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
           title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-          className={`flex w-full items-center rounded-md py-1.5 text-zinc-400 transition-colors hover:bg-zinc-900 hover:text-zinc-100 ${
-            collapsed ? 'justify-center' : 'gap-2 px-2'
-          }`}
+          className={`w-full text-muted-foreground ${collapsed ? 'px-0' : 'justify-start gap-2 px-2'}`}
+          size={collapsed ? 'icon-sm' : 'sm'}
         >
           {collapsed ? (
-            <PanelLeftOpen aria-hidden="true" className="size-4" strokeWidth={1.75} />
+            <PanelLeftOpen aria-hidden="true" strokeWidth={1.75} />
           ) : (
-            <PanelLeftClose aria-hidden="true" className="size-4" strokeWidth={1.75} />
+            <>
+              <PanelLeftClose aria-hidden="true" strokeWidth={1.75} />
+              Collapse
+            </>
           )}
-        </button>
+        </Button>
       </div>
     </aside>
   );

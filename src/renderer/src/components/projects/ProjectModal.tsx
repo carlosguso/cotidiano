@@ -6,18 +6,23 @@ import {
   PROJECT_COLORS,
   suggestIdentifier,
 } from '@renderer/lib/projectColors';
-import { Button } from '@renderer/components/ui/Button';
-import { Input } from '@renderer/components/ui/Input';
-import { Textarea } from '@renderer/components/ui/Textarea';
-import { Modal } from '@renderer/components/ui/Modal';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 
 type ProjectModalProps = {
   open: boolean;
   onClose: () => void;
   project?: Project | null;
 };
-
-const FORM_ID = 'project-form';
 
 export function ProjectModal({ open, onClose, project = null }: ProjectModalProps) {
   const isEditing = project !== null;
@@ -101,74 +106,94 @@ export function ProjectModal({ open, onClose, project = null }: ProjectModalProp
   };
 
   return (
-    <Modal
+    <Dialog
       open={open && (!isEditing || project !== null)}
-      title={isEditing ? 'Edit project' : 'Create project'}
-      onClose={onClose}
-      footer={
-        <>
-          <Button variant="ghost" onClick={onClose}>
-            Cancel
-          </Button>
-          <Button variant="primary" type="submit" form={FORM_ID}>
-            {isEditing ? 'Save changes' : 'Create project'}
-          </Button>
-        </>
-      }
+      onOpenChange={(isOpen) => {
+        if (!isOpen) onClose();
+      }}
     >
-      <form id={FORM_ID} className="space-y-4" onSubmit={handleSubmit}>
-        <Input
-          autoFocus
-          label="Name"
-          placeholder="Marketing site"
-          value={name}
-          onChange={(event) => {
-            setError(null);
-            setName(event.target.value);
-          }}
-        />
+      <DialogContent showCloseButton={false} className="sm:max-w-lg">
+        <DialogHeader>
+          <DialogTitle>{isEditing ? 'Edit project' : 'Create project'}</DialogTitle>
+        </DialogHeader>
 
-        <Input
-          label="Identifier"
-          hint="Short key used in references, e.g. MKT"
-          value={identifier}
-          onChange={(event) => {
-            setError(null);
-            setIdentifierTouched(true);
-            setIdentifier(event.target.value.toUpperCase());
-          }}
-          error={error ?? undefined}
-        />
-
-        <Textarea
-          label="Description"
-          placeholder="What is this project about?"
-          value={description}
-          onChange={(event) => setDescription(event.target.value)}
-        />
-
-        <div className="space-y-2">
-          <span className="text-sm font-medium text-zinc-300">Color</span>
-          <div className="flex flex-wrap gap-2">
-            {PROJECT_COLORS.map((option) => {
-              const colors = PROJECT_COLOR_CLASSES[option];
-              const selected = color === option;
-
-              return (
-                <button
-                  key={option}
-                  type="button"
-                  aria-label={`Select ${option} color`}
-                  onClick={() => setColor(option)}
-                  className={`size-7 rounded-md transition-all ${colors.bg} ${
-                    selected ? `ring-2 ring-offset-2 ring-offset-zinc-950 ${colors.ring}` : ''
-                  }`}
-                />
-              );
-            })}
+        <form className="space-y-4" onSubmit={handleSubmit}>
+          <div className="space-y-2">
+            <Label htmlFor="project-name">Name</Label>
+            <Input
+              id="project-name"
+              autoFocus
+              placeholder="Marketing site"
+              value={name}
+              onChange={(event) => {
+                setError(null);
+                setName(event.target.value);
+              }}
+            />
           </div>
-        </div>
-      </form>
-    </Modal>
+
+          <div className="space-y-2">
+            <Label htmlFor="project-identifier">Identifier</Label>
+            <Input
+              id="project-identifier"
+              placeholder="MKT"
+              value={identifier}
+              aria-invalid={error !== null}
+              onChange={(event) => {
+                setError(null);
+                setIdentifierTouched(true);
+                setIdentifier(event.target.value.toUpperCase());
+              }}
+            />
+            {error ? (
+              <p className="text-xs text-destructive">{error}</p>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                Short key used in references, e.g. MKT
+              </p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="project-description">Description</Label>
+            <Textarea
+              id="project-description"
+              placeholder="What is this project about?"
+              value={description}
+              onChange={(event) => setDescription(event.target.value)}
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label>Color</Label>
+            <div className="flex flex-wrap gap-2">
+              {PROJECT_COLORS.map((option) => {
+                const colors = PROJECT_COLOR_CLASSES[option];
+                const selected = color === option;
+
+                return (
+                  <button
+                    key={option}
+                    type="button"
+                    aria-label={`Select ${option} color`}
+                    onClick={() => setColor(option)}
+                    className={`size-7 rounded-md transition-all ${colors.bg} ${
+                      selected ? `ring-2 ring-offset-2 ring-offset-background ${colors.ring}` : ''
+                    }`}
+                  />
+                );
+              })}
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button type="button" variant="ghost" onClick={onClose}>
+              Cancel
+            </Button>
+            <Button type="submit">{isEditing ? 'Save changes' : 'Create project'}</Button>
+          </DialogFooter>
+        </form>
+      </DialogContent>
+    </Dialog>
   );
 }
