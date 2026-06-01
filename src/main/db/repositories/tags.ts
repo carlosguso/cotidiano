@@ -1,4 +1,4 @@
-import { and, eq } from 'drizzle-orm';
+import { and, eq, inArray } from 'drizzle-orm';
 import { normalizeTags } from '../../../shared/lib/taskTags';
 import type { AppDatabase } from '../client';
 import { tags, taskTags } from '../schema';
@@ -82,6 +82,10 @@ export function getTagNamesByTaskIds(
     return result;
   }
 
+  for (const taskId of taskIds) {
+    result.set(taskId, []);
+  }
+
   const rows = db
     .select({
       taskId: taskTags.taskId,
@@ -89,11 +93,18 @@ export function getTagNamesByTaskIds(
     })
     .from(taskTags)
     .innerJoin(tags, eq(taskTags.tagId, tags.id))
+    .where(inArray(taskTags.taskId, taskIds))
     .all();
 
+  for (const row of rows) {
+    const names = result.get(row.taskId);
+    if (names) {
+      names.push(row.name);
+    }
+  }
+
   for (const taskId of taskIds) {
-    const names = rows.filter((row) => row.taskId === taskId).map((row) => row.name);
-    result.set(taskId, normalizeTags(names));
+    result.set(taskId, normalizeTags(result.get(taskId) ?? []));
   }
 
   return result;
