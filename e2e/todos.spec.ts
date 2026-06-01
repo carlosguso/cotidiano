@@ -28,7 +28,17 @@ test.describe('Todo lists', () => {
     await window.getByRole('button', { name: 'Add item' }).click();
     const dialog = window.getByRole('dialog');
     await dialog.getByRole('tab', { name: 'From project' }).click();
-    await dialog.locator('#todo-item-task').selectOption({ label: 'Design homepage' });
+
+    const projectInput = dialog.getByRole('combobox', { name: 'Project' });
+    await projectInput.click();
+    await projectInput.fill('Web');
+    await dialog.getByRole('option', { name: 'Website' }).click();
+
+    const taskInput = dialog.getByRole('combobox', { name: 'Task' });
+    await taskInput.click();
+    await taskInput.fill('Design');
+    await dialog.getByRole('option', { name: 'Design homepage' }).click();
+
     await dialog.getByRole('button', { name: 'Add task' }).click();
     await dialog.waitFor({ state: 'hidden' });
 

@@ -17,7 +17,7 @@ Work-session lists that mix **misc items** (not tied to a project) and **referen
 | `TodoListModal` | Create / edit list |
 | `TodoListDetail` | Main pane when a list is selected |
 | `TodoItemRow` | Checkbox, title, project badge for linked tasks |
-| `AddTodoItemModal` | Misc tab + “From project” task picker |
+| `AddTodoItemModal` | Misc tab + searchable project/task pickers (`SearchableSelect`) |
 | `EditTodoItemModal` | Edit misc item title only |
 
 Navigation: selecting a project clears the selected todo list and vice versa (`AppLayout`).
