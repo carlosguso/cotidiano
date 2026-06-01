@@ -1,6 +1,7 @@
 import { app, BrowserWindow } from 'electron';
 import { join } from 'path';
 import { initDatabase, pingDatabase, resolveDatabasePath } from './db';
+import { registerProjectsIpc } from './ipc/projects';
 
 const APP_BACKGROUND = '#09090b';
 
@@ -34,6 +35,7 @@ app.whenReady().then(() => {
     throw new Error('Database connection check failed');
   }
 
+  registerProjectsIpc();
   createWindow();
 
   app.on('activate', () => {

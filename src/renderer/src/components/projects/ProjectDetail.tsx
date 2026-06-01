@@ -53,14 +53,14 @@ export function ProjectDetail() {
     );
   }
 
-  const handleArchive = () => {
-    updateProject(selectedProject.id, { status: 'archived' });
+  const handleArchive = async () => {
+    await updateProject(selectedProject.id, { status: 'archived' });
     selectProject(null);
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     deleteTasksForProject(selectedProject.id);
-    deleteProject(selectedProject.id);
+    await deleteProject(selectedProject.id);
   };
 
   return (

@@ -2,6 +2,7 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
   type ReactNode,
@@ -17,10 +18,11 @@ type ProjectsContextValue = {
   activeProjects: Project[];
   selectedProjectId: string | null;
   selectedProject: Project | null;
+  isLoading: boolean;
   selectProject: (projectId: string | null) => void;
-  createProject: (input: CreateProjectInput) => Project;
-  updateProject: (projectId: string, input: UpdateProjectInput) => void;
-  deleteProject: (projectId: string) => void;
+  createProject: (input: CreateProjectInput) => Promise<Project>;
+  updateProject: (projectId: string, input: UpdateProjectInput) => Promise<void>;
+  deleteProject: (projectId: string) => Promise<void>;
 };
 
 const ProjectsContext = createContext<ProjectsContextValue | null>(null);
@@ -31,6 +33,10 @@ function createId(): string {
 
 function now(): string {
   return new Date().toISOString();
+}
+
+function hasProjectsApi(): boolean {
+  return typeof window.electronAPI?.projects !== 'undefined';
 }
 
 export function ProjectsProvider({
@@ -46,6 +52,34 @@ export function ProjectsProvider({
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
     initialSelectedProjectId,
   );
+  const [isLoading, setIsLoading] = useState(
+    () => initialProjects.length === 0 && hasProjectsApi(),
+  );
+
+  useEffect(() => {
+    if (initialProjects.length > 0 || !hasProjectsApi()) {
+      return;
+    }
+
+    let cancelled = false;
+
+    void window.electronAPI.projects
+      .list()
+      .then((loaded) => {
+        if (!cancelled) {
+          setProjects(loaded);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [initialProjects.length]);
 
   const activeProjects = useMemo(
     () =>
@@ -64,7 +98,14 @@ export function ProjectsProvider({
     setSelectedProjectId(projectId);
   }, []);
 
-  const createProject = useCallback((input: CreateProjectInput): Project => {
+  const createProject = useCallback(async (input: CreateProjectInput): Promise<Project> => {
+    if (hasProjectsApi()) {
+      const project = await window.electronAPI.projects.create(input);
+      setProjects((current) => [...current, project]);
+      setSelectedProjectId(project.id);
+      return project;
+    }
+
     const timestamp = now();
     const project: Project = {
       id: createId(),
@@ -82,24 +123,42 @@ export function ProjectsProvider({
     return project;
   }, []);
 
-  const updateProject = useCallback((projectId: string, input: UpdateProjectInput) => {
-    setProjects((current) =>
-      current.map((project) => {
-        if (project.id !== projectId) return project;
+  const updateProject = useCallback(
+    async (projectId: string, input: UpdateProjectInput): Promise<void> => {
+      if (hasProjectsApi()) {
+        const updated = await window.electronAPI.projects.update(projectId, input);
+        setProjects((current) =>
+          current.map((project) => (project.id === projectId ? updated : project)),
+        );
+        return;
+      }
 
-        return {
-          ...project,
-          ...input,
-          name: input.name?.trim() ?? project.name,
-          identifier: input.identifier?.trim().toUpperCase() ?? project.identifier,
-          description: input.description?.trim() ?? project.description,
-          updatedAt: now(),
-        };
-      }),
-    );
-  }, []);
+      setProjects((current) =>
+        current.map((project) => {
+          if (project.id !== projectId) return project;
 
-  const deleteProject = useCallback((projectId: string) => {
+          return {
+            ...project,
+            ...input,
+            name: input.name?.trim() ?? project.name,
+            identifier: input.identifier?.trim().toUpperCase() ?? project.identifier,
+            description: input.description?.trim() ?? project.description,
+            updatedAt: now(),
+          };
+        }),
+      );
+    },
+    [],
+  );
+
+  const deleteProject = useCallback(async (projectId: string): Promise<void> => {
+    if (hasProjectsApi()) {
+      await window.electronAPI.projects.delete(projectId);
+      setProjects((current) => current.filter((project) => project.id !== projectId));
+      setSelectedProjectId((current) => (current === projectId ? null : current));
+      return;
+    }
+
     setProjects((current) => current.filter((project) => project.id !== projectId));
     setSelectedProjectId((current) => (current === projectId ? null : current));
   }, []);
@@ -110,6 +169,7 @@ export function ProjectsProvider({
       activeProjects,
       selectedProjectId,
       selectedProject,
+      isLoading,
       selectProject,
       createProject,
       updateProject,
@@ -120,6 +180,7 @@ export function ProjectsProvider({
       activeProjects,
       selectedProjectId,
       selectedProject,
+      isLoading,
       selectProject,
       createProject,
       updateProject,
