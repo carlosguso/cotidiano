@@ -53,7 +53,7 @@ export function TaskList({ projectId }: TaskListProps) {
     <section className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-medium text-foreground">Tasks</h2>
-        <Button type="button" variant="outline" size="sm" onClick={() => setCreateModalOpen(true)}>
+        <Button type="button" size="sm" onClick={() => setCreateModalOpen(true)}>
           <Plus aria-hidden="true" />
           Add task
         </Button>
