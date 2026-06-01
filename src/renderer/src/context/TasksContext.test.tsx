@@ -1,4 +1,4 @@
-import { act, renderHook } from '@testing-library/react';
+import { act, renderHook, waitFor } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { TasksProvider, useTasks } from '@renderer/context/TasksContext';
 import { createMockTask } from '@renderer/test/fixtures/tasks';
@@ -10,13 +10,13 @@ describe('TasksContext', () => {
     );
   });
 
-  it('creates a task for a project', () => {
+  it('creates a task for a project', async () => {
     const { result } = renderHook(() => useTasks(), {
       wrapper: TasksProvider,
     });
 
-    act(() => {
-      result.current.createTask({
+    await act(async () => {
+      await result.current.createTask({
         projectId: 'project-1',
         title: 'Design homepage',
         description: 'Wireframe the hero section',
@@ -36,13 +36,13 @@ describe('TasksContext', () => {
     });
   });
 
-  it('creates a task with tags', () => {
+  it('creates a task with tags', async () => {
     const { result } = renderHook(() => useTasks(), {
       wrapper: TasksProvider,
     });
 
-    act(() => {
-      result.current.createTask({
+    await act(async () => {
+      await result.current.createTask({
         projectId: 'project-1',
         title: 'Design homepage',
         tags: ['  design  ', 'Design', 'copy'],
@@ -98,7 +98,7 @@ describe('TasksContext', () => {
     expect(result.current.tasksForProject('missing')).toHaveLength(0);
   });
 
-  it('updates a task', () => {
+  it('updates a task', async () => {
     const task = createMockTask();
     const { result } = renderHook(() => useTasks(), {
       wrapper: ({ children }) => (
@@ -106,8 +106,8 @@ describe('TasksContext', () => {
       ),
     });
 
-    act(() => {
-      result.current.updateTask(task.id, {
+    await act(async () => {
+      await result.current.updateTask(task.id, {
         title: 'Updated task',
         description: 'Updated description',
         status: 'done',
@@ -122,7 +122,7 @@ describe('TasksContext', () => {
     expect(result.current.tasks[0].updatedAt).not.toBe(task.updatedAt);
   });
 
-  it('updates task tags', () => {
+  it('updates task tags', async () => {
     const task = createMockTask({ tags: ['design'] });
     const { result } = renderHook(() => useTasks(), {
       wrapper: ({ children }) => (
@@ -130,8 +130,8 @@ describe('TasksContext', () => {
       ),
     });
 
-    act(() => {
-      result.current.updateTask(task.id, {
+    await act(async () => {
+      await result.current.updateTask(task.id, {
         tags: ['copy', 'copy', ' urgent '],
       });
     });
@@ -139,7 +139,7 @@ describe('TasksContext', () => {
     expect(result.current.tasks[0].tags).toEqual(['copy', 'urgent']);
   });
 
-  it('clears all tags when an empty array is provided', () => {
+  it('clears all tags when an empty array is provided', async () => {
     const task = createMockTask({ tags: ['design', 'copy'] });
     const { result } = renderHook(() => useTasks(), {
       wrapper: ({ children }) => (
@@ -147,14 +147,14 @@ describe('TasksContext', () => {
       ),
     });
 
-    act(() => {
-      result.current.updateTask(task.id, { tags: [] });
+    await act(async () => {
+      await result.current.updateTask(task.id, { tags: [] });
     });
 
     expect(result.current.tasks[0].tags).toEqual([]);
   });
 
-  it('preserves tags when tags are omitted from the update', () => {
+  it('preserves tags when tags are omitted from the update', async () => {
     const task = createMockTask({ tags: ['design'] });
     const { result } = renderHook(() => useTasks(), {
       wrapper: ({ children }) => (
@@ -162,20 +162,20 @@ describe('TasksContext', () => {
       ),
     });
 
-    act(() => {
-      result.current.updateTask(task.id, { title: 'Updated title' });
+    await act(async () => {
+      await result.current.updateTask(task.id, { title: 'Updated title' });
     });
 
     expect(result.current.tasks[0].tags).toEqual(['design']);
   });
 
-  it('imports multiple tasks for a project', () => {
+  it('imports multiple tasks for a project', async () => {
     const { result } = renderHook(() => useTasks(), {
       wrapper: TasksProvider,
     });
 
-    act(() => {
-      result.current.importTasks('project-1', [
+    await act(async () => {
+      await result.current.importTasks('project-1', [
         { title: 'Task A', status: 'todo', tags: ['alpha'] },
         { title: 'Task B', status: 'done' },
       ]);
@@ -210,7 +210,7 @@ describe('TasksContext', () => {
     ]);
   });
 
-  it('archives and restores a task', () => {
+  it('archives and restores a task', async () => {
     const task = createMockTask();
     const { result } = renderHook(() => useTasks(), {
       wrapper: ({ children }) => (
@@ -218,22 +218,22 @@ describe('TasksContext', () => {
       ),
     });
 
-    act(() => {
-      result.current.archiveTask(task.id);
+    await act(async () => {
+      await result.current.archiveTask(task.id);
     });
 
     expect(result.current.tasks[0].archived).toBe(true);
     expect(result.current.tasksForProject('project-1')).toHaveLength(0);
 
-    act(() => {
-      result.current.restoreTask(task.id);
+    await act(async () => {
+      await result.current.restoreTask(task.id);
     });
 
     expect(result.current.tasks[0].archived).toBe(false);
     expect(result.current.tasksForProject('project-1')).toHaveLength(1);
   });
 
-  it('deletes a task', () => {
+  it('deletes a task', async () => {
     const task = createMockTask();
     const { result } = renderHook(() => useTasks(), {
       wrapper: ({ children }) => (
@@ -241,14 +241,14 @@ describe('TasksContext', () => {
       ),
     });
 
-    act(() => {
-      result.current.deleteTask(task.id);
+    await act(async () => {
+      await result.current.deleteTask(task.id);
     });
 
     expect(result.current.tasks).toHaveLength(0);
   });
 
-  it('deletes all tasks for a project', () => {
+  it('deletes all tasks for a project', async () => {
     const taskA = createMockTask({ id: 'task-a', projectId: 'project-1' });
     const taskB = createMockTask({ id: 'task-b', projectId: 'project-1' });
     const taskC = createMockTask({ id: 'task-c', projectId: 'project-2' });
@@ -259,11 +259,50 @@ describe('TasksContext', () => {
       ),
     });
 
-    act(() => {
-      result.current.deleteTasksForProject('project-1');
+    await act(async () => {
+      await result.current.deleteTasksForProject('project-1');
     });
 
     expect(result.current.tasks).toHaveLength(1);
     expect(result.current.tasks[0].id).toBe('task-c');
+  });
+
+  it('loads tasks from the database API on mount', async () => {
+    const stored = createMockTask({ id: 'stored-1', title: 'Stored task' });
+    window.electronAPI = {
+      platform: 'darwin',
+      projects: {
+        list: async () => [],
+        create: async () => {
+          throw new Error('not implemented');
+        },
+        update: async () => {
+          throw new Error('not implemented');
+        },
+        delete: async () => undefined,
+      },
+      tasks: {
+        list: async () => [stored],
+        create: async () => stored,
+        import: async () => [stored],
+        update: async () => stored,
+        delete: async () => undefined,
+        deleteByProject: async () => undefined,
+      },
+    };
+
+    const { result } = renderHook(() => useTasks(), {
+      wrapper: TasksProvider,
+    });
+
+    expect(result.current.isLoading).toBe(true);
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    expect(result.current.tasks).toEqual([stored]);
+
+    window.electronAPI = undefined as unknown as Window['electronAPI'];
   });
 });

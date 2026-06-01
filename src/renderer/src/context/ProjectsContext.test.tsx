@@ -130,6 +130,18 @@ describe('ProjectsContext', () => {
         update: async () => stored,
         delete: async () => undefined,
       },
+      tasks: {
+        list: async () => [],
+        create: async () => {
+          throw new Error('not implemented');
+        },
+        import: async () => [],
+        update: async () => {
+          throw new Error('not implemented');
+        },
+        delete: async () => undefined,
+        deleteByProject: async () => undefined,
+      },
     };
 
     const { result } = renderHook(() => useProjects(), {

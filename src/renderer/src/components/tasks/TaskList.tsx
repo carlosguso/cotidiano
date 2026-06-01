@@ -54,15 +54,15 @@ export function TaskList({ projectId }: TaskListProps) {
     setArchivingTask(null);
   }, [projectId]);
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!deletingTask) return;
-    deleteTask(deletingTask.id);
+    await deleteTask(deletingTask.id);
     setDeletingTask(null);
   };
 
-  const handleArchive = () => {
+  const handleArchive = async () => {
     if (!archivingTask) return;
-    archiveTask(archivingTask.id);
+    await archiveTask(archivingTask.id);
     setArchivingTask(null);
   };
 
@@ -129,9 +129,9 @@ export function TaskList({ projectId }: TaskListProps) {
                       onEdit={setEditingTask}
                       onDelete={setDeletingTask}
                       onArchive={setArchivingTask}
-                      onStatusChange={(taskToUpdate, status) =>
-                        updateTask(taskToUpdate.id, { status })
-                      }
+                      onStatusChange={(taskToUpdate, status) => {
+                        void updateTask(taskToUpdate.id, { status });
+                      }}
                     />
                   ))}
                 </div>

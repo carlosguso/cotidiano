@@ -72,7 +72,7 @@ export function TaskModal({ open, onClose, projectId, task = null }: TaskModalPr
     addTag(tagInput);
   };
 
-  const handleSubmit = (event: FormEvent) => {
+  const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
 
     const trimmedTitle = title.trim();
@@ -83,24 +83,28 @@ export function TaskModal({ open, onClose, projectId, task = null }: TaskModalPr
       return;
     }
 
-    if (isEditing) {
-      updateTask(task.id, {
-        title: trimmedTitle,
-        description,
-        status,
-        tags: nextTags,
-      });
-    } else if (projectId) {
-      createTask({
-        projectId,
-        title: trimmedTitle,
-        description,
-        status,
-        tags: nextTags,
-      });
-    }
+    try {
+      if (isEditing) {
+        await updateTask(task.id, {
+          title: trimmedTitle,
+          description,
+          status,
+          tags: nextTags,
+        });
+      } else if (projectId) {
+        await createTask({
+          projectId,
+          title: trimmedTitle,
+          description,
+          status,
+          tags: nextTags,
+        });
+      }
 
-    onClose();
+      onClose();
+    } catch {
+      setError('Could not save the task. Please try again.');
+    }
   };
 
   return (

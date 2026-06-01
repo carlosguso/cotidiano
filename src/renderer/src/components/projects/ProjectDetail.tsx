@@ -59,7 +59,7 @@ export function ProjectDetail() {
   };
 
   const handleDelete = async () => {
-    deleteTasksForProject(selectedProject.id);
+    await deleteTasksForProject(selectedProject.id);
     await deleteProject(selectedProject.id);
   };
 
