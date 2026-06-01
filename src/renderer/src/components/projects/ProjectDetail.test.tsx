@@ -24,7 +24,8 @@ describe('ProjectDetail', () => {
     expect(screen.getByRole('heading', { name: 'Marketing Site' })).toBeInTheDocument();
     expect(screen.getByText('MKT')).toBeInTheDocument();
     expect(screen.getByText('A marketing website project')).toBeInTheDocument();
-    expect(screen.getByText('Tasks')).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Tasks' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Add task' })).toBeInTheDocument();
     expect(screen.getByText('Documents')).toBeInTheDocument();
   });
 

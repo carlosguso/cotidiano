@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import { Archive, MoreVertical, Pencil, Trash2 } from 'lucide-react';
 import { useProjects } from '@renderer/context/ProjectsContext';
+import { useTasks } from '@renderer/context/TasksContext';
+import { TaskList } from '@renderer/components/tasks/TaskList';
 import { ProjectIcon } from '@renderer/components/projects/ProjectIcon';
 import { ProjectModal } from '@renderer/components/projects/ProjectModal';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
@@ -24,6 +26,7 @@ function formatDate(value: string): string {
 
 export function ProjectDetail() {
   const { selectedProject, updateProject, deleteProject, selectProject } = useProjects();
+  const { deleteTasksForProject } = useTasks();
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [confirmAction, setConfirmAction] = useState<ConfirmAction>(null);
 
@@ -52,6 +55,7 @@ export function ProjectDetail() {
   };
 
   const handleDelete = () => {
+    deleteTasksForProject(selectedProject.id);
     deleteProject(selectedProject.id);
   };
 
@@ -115,15 +119,7 @@ export function ProjectDetail() {
             </section>
           ) : null}
 
-          <section className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h2 className="text-sm font-medium text-foreground">Tasks</h2>
-              <span className="text-xs text-muted-foreground">Coming soon</span>
-            </div>
-            <div className="rounded-lg border border-dashed border-border px-4 py-8 text-center">
-              <p className="text-sm text-muted-foreground">Tasks will live inside this project.</p>
-            </div>
-          </section>
+          <TaskList projectId={selectedProject.id} />
 
           <section className="space-y-3">
             <div className="flex items-center justify-between">
