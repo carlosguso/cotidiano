@@ -21,6 +21,10 @@ A desktop app built with [Electron](https://www.electronjs.org/), [React](https:
   - Confirmation dialogs for destructive actions
 - **In-memory state** — project data lives in React context only (persistence not implemented yet)
 
+## AI agent context (`AGENTS.md`)
+
+This repo includes **`AGENTS.md` files** in major directories (start at [`AGENTS.md`](AGENTS.md) in the project root). They describe how each area fits together—architecture, IPC, database, React contexts, tests—so coding agents and live sessions can orient quickly without re-scanning the whole tree.
+
 ## Project structure
 
 ```
