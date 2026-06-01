@@ -18,7 +18,7 @@ type TaskListProps = {
 };
 
 export function TaskList({ projectId }: TaskListProps) {
-  const { tasksForProject, deleteTask } = useTasks();
+  const { tasksForProject, deleteTask, updateTask } = useTasks();
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [deletingTask, setDeletingTask] = useState<Task | null>(null);
@@ -84,13 +84,16 @@ export function TaskList({ projectId }: TaskListProps) {
               {sectionTasks.length === 0 ? (
                 <p className="px-1 py-2 text-sm text-muted-foreground">No tasks</p>
               ) : (
-                <div className="divide-y divide-border rounded-lg border border-border">
+                <div className="overflow-hidden rounded-lg border border-border divide-y divide-border">
                   {sectionTasks.map((task) => (
                     <TaskListItem
                       key={task.id}
                       task={task}
                       onEdit={setEditingTask}
                       onDelete={setDeletingTask}
+                      onStatusChange={(taskToUpdate, status) =>
+                        updateTask(taskToUpdate.id, { status })
+                      }
                     />
                   ))}
                 </div>

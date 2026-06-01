@@ -1,5 +1,10 @@
-import { MoreVertical, Pencil, Trash2 } from 'lucide-react';
-import type { Task } from '@renderer/types/task';
+import { Check, MoreVertical, Pencil, Trash2 } from 'lucide-react';
+import type { Task, TaskStatus } from '@renderer/types/task';
+import {
+  TASK_STATUSES,
+  TASK_STATUS_LABELS,
+  TASK_STATUS_SECTION_STYLES,
+} from '@renderer/lib/taskStatus';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -13,23 +18,62 @@ type TaskListItemProps = {
   task: Task;
   onEdit: (task: Task) => void;
   onDelete: (task: Task) => void;
+  onStatusChange: (task: Task, status: TaskStatus) => void;
 };
 
-export function TaskListItem({ task, onEdit, onDelete }: TaskListItemProps) {
+export function TaskListItem({ task, onEdit, onDelete, onStatusChange }: TaskListItemProps) {
+  const statusStyles = TASK_STATUS_SECTION_STYLES[task.status];
+
   return (
     <div className="flex items-center justify-between gap-3 bg-background px-4 py-3">
-      <div className="min-w-0 flex-1 space-y-1">
-        <p
-          className={cn(
-            'text-sm font-medium text-foreground',
-            task.status === 'done' && 'text-muted-foreground line-through',
-          )}
-        >
-          {task.title}
-        </p>
-        {task.description ? (
-          <p className="text-sm text-muted-foreground">{task.description}</p>
-        ) : null}
+      <div className="flex min-w-0 flex-1 items-start gap-3">
+        <div className="self-center shrink-0">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                type="button"
+                variant="outline"
+                size="icon-sm"
+                aria-label={`Change status for ${task.title}`}
+                className="size-7 shrink-0"
+              >
+                <span className={cn('size-2 rounded-full', statusStyles.dot)} aria-hidden="true" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start">
+              {TASK_STATUSES.map((status) => {
+                const optionStyles = TASK_STATUS_SECTION_STYLES[status];
+                const selected = status === task.status;
+
+                return (
+                  <DropdownMenuItem
+                    key={status}
+                    disabled={selected}
+                    onClick={() => onStatusChange(task, status)}
+                  >
+                    <span className={cn('size-2 rounded-full', optionStyles.dot)} aria-hidden="true" />
+                    {TASK_STATUS_LABELS[status]}
+                    {selected ? <Check className="ml-auto" aria-hidden="true" /> : null}
+                  </DropdownMenuItem>
+                );
+              })}
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+
+        <div className="min-w-0 flex-1 space-y-1">
+          <p
+            className={cn(
+              'text-sm font-medium text-foreground',
+              task.status === 'done' && 'text-muted-foreground line-through',
+            )}
+          >
+            {task.title}
+          </p>
+          {task.description ? (
+            <p className="text-sm text-muted-foreground">{task.description}</p>
+          ) : null}
+        </div>
       </div>
 
       <DropdownMenu>

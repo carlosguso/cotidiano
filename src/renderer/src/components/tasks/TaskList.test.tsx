@@ -56,6 +56,28 @@ describe('TaskList', () => {
     expect(within(doneSection).getByText('Kickoff meeting')).toBeInTheDocument();
   });
 
+  it('changes task status from the row status menu', async () => {
+    const project = createMockProject();
+    const task = createMockTask({ projectId: project.id, status: 'todo' });
+    const { user } = renderWithProviders(<TaskList projectId={project.id} />, {
+      initialProjects: [project],
+      initialSelectedProjectId: project.id,
+      initialTasks: [task],
+    });
+
+    const todoSection = screen.getByRole('region', { name: 'To do' });
+    expect(within(todoSection).getByText('Write landing page copy')).toBeInTheDocument();
+
+    await user.click(
+      screen.getByRole('button', { name: 'Change status for Write landing page copy' }),
+    );
+    await user.click(screen.getByRole('menuitem', { name: /In progress/ }));
+
+    const inProgressSection = screen.getByRole('region', { name: 'In progress' });
+    expect(within(inProgressSection).getByText('Write landing page copy')).toBeInTheDocument();
+    expect(within(todoSection).queryByText('Write landing page copy')).not.toBeInTheDocument();
+  });
+
   it('opens the create task modal', async () => {
     const project = createMockProject();
     const { user } = renderWithProviders(<TaskList projectId={project.id} />, {
