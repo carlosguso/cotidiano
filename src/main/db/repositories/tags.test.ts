@@ -5,7 +5,7 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { createDatabaseClient, runMigrations } from '../client';
 import { createProject } from './projects';
 import { createTask } from './tasks';
-import { listTagNamesForProject, resolveTagIds } from './tags';
+import { getTagNamesByTaskIds, listTagNamesForProject, resolveTagIds } from './tags';
 
 describe('tags repository', () => {
   let tempDir: string;
@@ -51,6 +51,34 @@ describe('tags repository', () => {
       expect.arrayContaining(['copy', 'Design', 'urgent']),
     );
     expect(listTagNamesForProject(db, project.id)).toHaveLength(3);
+
+    sqlite.close();
+  });
+
+  it('getTagNamesByTaskIds returns only tags for the requested tasks', () => {
+    const { db, sqlite, project } = setupDb();
+
+    const taskA = createTask(db, {
+      projectId: project.id,
+      title: 'Task A',
+      tags: ['alpha', 'shared'],
+    });
+    const taskB = createTask(db, {
+      projectId: project.id,
+      title: 'Task B',
+      tags: ['beta'],
+    });
+    const taskC = createTask(db, {
+      projectId: project.id,
+      title: 'Task C',
+      tags: ['gamma'],
+    });
+
+    const byTaskId = getTagNamesByTaskIds(db, [taskA.id, taskB.id]);
+
+    expect(byTaskId.get(taskA.id)).toEqual(['alpha', 'shared']);
+    expect(byTaskId.get(taskB.id)).toEqual(['beta']);
+    expect(byTaskId.has(taskC.id)).toBe(false);
 
     sqlite.close();
   });
