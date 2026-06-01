@@ -1,10 +1,17 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Plus } from 'lucide-react';
+import { MoreVertical, Plus, Upload } from 'lucide-react';
 import { useTasks } from '@renderer/context/TasksContext';
 import { TaskListItem } from '@renderer/components/tasks/TaskListItem';
 import { TaskModal } from '@renderer/components/tasks/TaskModal';
+import { TaskImportModal } from '@renderer/components/tasks/TaskImportModal';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import { Button } from '@/components/ui/button';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import {
   TASK_STATUSES,
   TASK_STATUS_LABELS,
@@ -20,6 +27,7 @@ type TaskListProps = {
 export function TaskList({ projectId }: TaskListProps) {
   const { tasksForProject, deleteTask, updateTask } = useTasks();
   const [createModalOpen, setCreateModalOpen] = useState(false);
+  const [importModalOpen, setImportModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [deletingTask, setDeletingTask] = useState<Task | null>(null);
 
@@ -39,6 +47,7 @@ export function TaskList({ projectId }: TaskListProps) {
 
   useEffect(() => {
     setCreateModalOpen(false);
+    setImportModalOpen(false);
     setEditingTask(null);
     setDeletingTask(null);
   }, [projectId]);
@@ -53,10 +62,30 @@ export function TaskList({ projectId }: TaskListProps) {
     <section className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-medium text-foreground">Tasks</h2>
-        <Button type="button" size="sm" onClick={() => setCreateModalOpen(true)}>
-          <Plus aria-hidden="true" />
-          Add task
-        </Button>
+        <div className="flex items-center gap-1">
+          <Button type="button" size="sm" onClick={() => setCreateModalOpen(true)}>
+            <Plus aria-hidden="true" />
+            Add task
+          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon-sm"
+                aria-label="More task actions"
+              >
+                <MoreVertical aria-hidden="true" strokeWidth={1.75} />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={() => setImportModalOpen(true)}>
+                <Upload />
+                Import tasks
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
 
       <div className="space-y-5">
@@ -107,6 +136,12 @@ export function TaskList({ projectId }: TaskListProps) {
         open={createModalOpen}
         projectId={projectId}
         onClose={() => setCreateModalOpen(false)}
+      />
+
+      <TaskImportModal
+        open={importModalOpen}
+        projectId={projectId}
+        onClose={() => setImportModalOpen(false)}
       />
 
       <TaskModal

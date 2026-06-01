@@ -14,6 +14,7 @@ type TasksContextValue = {
   tasksForProject: (projectId: string) => Task[];
   tagsForProject: (projectId: string) => string[];
   createTask: (input: CreateTaskInput) => Task;
+  importTasks: (projectId: string, inputs: Omit<CreateTaskInput, 'projectId'>[]) => number;
   updateTask: (taskId: string, input: UpdateTaskInput) => void;
   deleteTask: (taskId: string) => void;
   deleteTasksForProject: (projectId: string) => void;
@@ -74,6 +75,28 @@ export function TasksProvider({
     return task;
   }, []);
 
+  const importTasks = useCallback(
+    (projectId: string, inputs: Omit<CreateTaskInput, 'projectId'>[]): number => {
+      if (inputs.length === 0) return 0;
+
+      const timestamp = now();
+      const importedTasks: Task[] = inputs.map((input) => ({
+        id: createId(),
+        projectId,
+        title: input.title.trim(),
+        description: input.description?.trim() ?? '',
+        status: input.status ?? 'todo',
+        tags: normalizeTags(input.tags ?? []),
+        createdAt: timestamp,
+        updatedAt: timestamp,
+      }));
+
+      setTasks((current) => [...current, ...importedTasks]);
+      return importedTasks.length;
+    },
+    [],
+  );
+
   const updateTask = useCallback((taskId: string, input: UpdateTaskInput) => {
     setTasks((current) =>
       current.map((task) => {
@@ -105,11 +128,12 @@ export function TasksProvider({
       tasksForProject,
       tagsForProject,
       createTask,
+      importTasks,
       updateTask,
       deleteTask,
       deleteTasksForProject,
     }),
-    [tasks, tasksForProject, tagsForProject, createTask, updateTask, deleteTask, deleteTasksForProject],
+    [tasks, tasksForProject, tagsForProject, createTask, importTasks, updateTask, deleteTask, deleteTasksForProject],
   );
 
   return <TasksContext.Provider value={value}>{children}</TasksContext.Provider>;

@@ -168,6 +168,25 @@ describe('TasksContext', () => {
     expect(result.current.tasks[0].tags).toEqual(['design']);
   });
 
+  it('imports multiple tasks for a project', () => {
+    const { result } = renderHook(() => useTasks(), {
+      wrapper: TasksProvider,
+    });
+
+    act(() => {
+      result.current.importTasks('project-1', [
+        { title: 'Task A', status: 'todo', tags: ['alpha'] },
+        { title: 'Task B', status: 'done' },
+      ]);
+    });
+
+    expect(result.current.tasks).toHaveLength(2);
+    expect(result.current.tasksForProject('project-1').map((task) => task.title)).toEqual([
+      'Task A',
+      'Task B',
+    ]);
+  });
+
   it('deletes a task', () => {
     const task = createMockTask();
     const { result } = renderHook(() => useTasks(), {
