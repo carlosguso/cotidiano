@@ -6,7 +6,7 @@ Entry: `index.ts` — initializes DB, registers IPC, creates `BrowserWindow`.
 
 1. `resolveDatabasePath()` — user data dir, overridable via `COTIDIANO_DB_PATH` (used in E2E)
 2. `initDatabase(path)` — opens SQLite, runs Drizzle migrations
-3. `registerProjectsIpc()` / `registerTasksIpc()`
+3. `registerProjectsIpc()` / `registerTasksIpc()` / `registerTodosIpc()`
 4. `createWindow()` — preload at `../preload/index.js`, loads dev URL or `renderer/index.html`
 
 ## Subdirectories

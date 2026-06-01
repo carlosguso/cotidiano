@@ -13,3 +13,14 @@ export const TASKS_IPC = {
   delete: 'tasks:delete',
   deleteByProject: 'tasks:deleteByProject',
 } as const;
+
+export const TODOS_IPC = {
+  listLists: 'todos:listLists',
+  createList: 'todos:createList',
+  updateList: 'todos:updateList',
+  deleteList: 'todos:deleteList',
+  listItems: 'todos:listItems',
+  createItem: 'todos:createItem',
+  updateItem: 'todos:updateItem',
+  deleteItem: 'todos:deleteItem',
+} as const;

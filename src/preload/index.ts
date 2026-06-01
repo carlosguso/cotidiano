@@ -1,5 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron';
-import { PROJECTS_IPC, TASKS_IPC } from '../shared/ipc/channels';
+import { PROJECTS_IPC, TASKS_IPC, TODOS_IPC } from '../shared/ipc/channels';
 import type { ElectronAPI } from './index.d';
 import type { CreateProjectInput, UpdateProjectInput } from '../shared/types/project';
 import type {
@@ -7,6 +7,12 @@ import type {
   ImportTaskInput,
   UpdateTaskInput,
 } from '../shared/types/task';
+import type {
+  CreateTodoItemInput,
+  CreateTodoListInput,
+  UpdateTodoItemInput,
+  UpdateTodoListInput,
+} from '../shared/types/todo';
 
 const api: ElectronAPI = {
   platform: process.platform,
@@ -27,6 +33,20 @@ const api: ElectronAPI = {
     delete: (id: string) => ipcRenderer.invoke(TASKS_IPC.delete, id),
     deleteByProject: (projectId: string) =>
       ipcRenderer.invoke(TASKS_IPC.deleteByProject, projectId),
+  },
+  todos: {
+    listLists: () => ipcRenderer.invoke(TODOS_IPC.listLists),
+    createList: (input: CreateTodoListInput) =>
+      ipcRenderer.invoke(TODOS_IPC.createList, input),
+    updateList: (id: string, input: UpdateTodoListInput) =>
+      ipcRenderer.invoke(TODOS_IPC.updateList, { id, input }),
+    deleteList: (id: string) => ipcRenderer.invoke(TODOS_IPC.deleteList, id),
+    listItems: (todoListId: string) => ipcRenderer.invoke(TODOS_IPC.listItems, todoListId),
+    createItem: (input: CreateTodoItemInput) =>
+      ipcRenderer.invoke(TODOS_IPC.createItem, input),
+    updateItem: (id: string, input: UpdateTodoItemInput) =>
+      ipcRenderer.invoke(TODOS_IPC.updateItem, { id, input }),
+    deleteItem: (id: string) => ipcRenderer.invoke(TODOS_IPC.deleteItem, id),
   },
 };
 

@@ -15,6 +15,14 @@
 - **Actions**: CRUD, `importTasks`, `archiveTask` / `restoreTask` (archive = `archived: true`), `deleteTasksForProject`
 - **Tags**: normalized via `@renderer/lib/taskTags` on create/update/import
 
+## `TodosContext`
+
+- **State**: `todoLists`, flat `todoItems` (with optional resolved `task`), `selectedTodoListId`, loading flags
+- **Derived**: `selectedTodoList`, `itemsForList(todoListId)`
+- **Actions**: list CRUD, item CRUD, `refreshItemsForList`
+- **Requires** `TasksProvider` ancestor for in-memory task linking
+- **Load**: lists on mount; items fetched when a list is selected (IPC path)
+
 ## Pattern for new domain data
 
 1. Add IPC + repository + shared types

@@ -5,7 +5,7 @@ Cross-process contracts that must not depend on Electron UI or React.
 ```
 shared/
 ├── ipc/channels.ts    # IPC channel name constants
-├── types/             # Project, Task, Tag DTOs
+├── types/             # Project, Task, Todo, Tag DTOs
 └── lib/taskTags.ts    # Tag normalization (used by main repos + renderer)
 ```
 

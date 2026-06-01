@@ -1,15 +1,26 @@
 import { useState } from 'react';
 import { PanelLeftClose, PanelLeftOpen, Plus } from 'lucide-react';
 import { useProjects } from '@renderer/context/ProjectsContext';
+import { useTodos } from '@renderer/context/TodosContext';
 import { ProjectListItem } from '@renderer/components/projects/ProjectListItem';
+import { TodoListListItem } from '@renderer/components/todos/TodoListListItem';
 import { Button } from '@/components/ui/button';
 
 type SidebarProps = {
   onCreateProject: () => void;
+  onCreateTodoList: () => void;
+  onSelectProject: (projectId: string) => void;
+  onSelectTodoList: (todoListId: string) => void;
 };
 
-export function Sidebar({ onCreateProject }: SidebarProps) {
-  const { activeProjects, selectedProjectId, selectProject } = useProjects();
+export function Sidebar({
+  onCreateProject,
+  onCreateTodoList,
+  onSelectProject,
+  onSelectTodoList,
+}: SidebarProps) {
+  const { activeProjects, selectedProjectId } = useProjects();
+  const { todoLists, selectedTodoListId } = useTodos();
   const [collapsed, setCollapsed] = useState(false);
 
   return (
@@ -57,11 +68,8 @@ export function Sidebar({ onCreateProject }: SidebarProps) {
         </Button>
       </div>
 
-      <nav
-        className={`scrollbar-thin flex-1 space-y-0.5 overflow-y-auto pb-4 ${
-          collapsed ? 'px-1.5' : 'px-2'
-        }`}
-      >
+      <div className={`scrollbar-thin flex-1 overflow-y-auto ${collapsed ? 'px-1.5' : 'px-2'}`}>
+      <nav className="space-y-0.5 pb-2">
         {activeProjects.length === 0 ? (
           collapsed ? (
             <Button
@@ -95,11 +103,74 @@ export function Sidebar({ onCreateProject }: SidebarProps) {
               project={project}
               selected={project.id === selectedProjectId}
               collapsed={collapsed}
-              onSelect={selectProject}
+              onSelect={onSelectProject}
             />
           ))
         )}
       </nav>
+
+      <div
+        className={`flex items-center py-3 ${
+          collapsed ? 'justify-center px-2' : 'justify-between px-3'
+        }`}
+      >
+        {!collapsed ? (
+          <span className="px-1 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground">
+            Todos
+          </span>
+        ) : null}
+        <Button
+          variant="ghost"
+          size="icon-sm"
+          className="shrink-0 text-muted-foreground"
+          onClick={onCreateTodoList}
+          aria-label="Create todo list"
+          title="Create todo list"
+        >
+          <Plus aria-hidden="true" strokeWidth={1.75} />
+        </Button>
+      </div>
+
+      <nav className="space-y-0.5 pb-4">
+        {todoLists.length === 0 ? (
+          collapsed ? (
+            <Button
+              type="button"
+              variant="outline"
+              size="icon-sm"
+              title="Create your first todo list"
+              onClick={onCreateTodoList}
+              className="w-full border-dashed text-muted-foreground"
+            >
+              <Plus aria-hidden="true" strokeWidth={1.75} />
+            </Button>
+          ) : (
+            <div className="rounded-md border border-dashed border-border px-3 py-4 text-center">
+              <p className="text-xs text-muted-foreground">No todo lists yet</p>
+              <Button
+                type="button"
+                variant="link"
+                size="sm"
+                onClick={onCreateTodoList}
+                className="mt-2 h-auto p-0"
+              >
+                Create a session list
+              </Button>
+            </div>
+          )
+        ) : (
+          todoLists.map((todoList) => (
+            <TodoListListItem
+              key={todoList.id}
+              todoList={todoList}
+              selected={todoList.id === selectedTodoListId}
+              collapsed={collapsed}
+              onSelect={onSelectTodoList}
+            />
+          ))
+        )}
+      </nav>
+      </div>
 
       <div className="border-t border-sidebar-border p-2">
         <Button

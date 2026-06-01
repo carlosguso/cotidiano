@@ -14,6 +14,7 @@
 - `platform` — `process.platform`
 - `projects` — list, create, update, delete
 - `tasks` — list, create, import, update, delete, deleteByProject
+- `todos` — listLists, createList, updateList, deleteList, listItems, createItem, updateItem, deleteItem
 
 Channel strings live in `src/shared/ipc/channels.ts` — import those constants here, never hardcode strings.
 

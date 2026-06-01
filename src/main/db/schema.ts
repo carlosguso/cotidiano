@@ -60,3 +60,23 @@ export const taskTags = sqliteTable(
   },
   (table) => [primaryKey({ columns: [table.taskId, table.tagId] })],
 );
+
+export const todoLists = sqliteTable('todo_lists', {
+  id: text('id').primaryKey(),
+  name: text('name').notNull(),
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
+});
+
+export const todoItems = sqliteTable('todo_items', {
+  id: text('id').primaryKey(),
+  todoListId: text('todo_list_id')
+    .notNull()
+    .references(() => todoLists.id, { onDelete: 'cascade' }),
+  taskId: text('task_id').references(() => tasks.id, { onDelete: 'cascade' }),
+  title: text('title').notNull(),
+  completed: integer('completed', { mode: 'boolean' }).notNull(),
+  position: integer('position').notNull(),
+  createdAt: text('created_at').notNull(),
+  updatedAt: text('updated_at').notNull(),
+});

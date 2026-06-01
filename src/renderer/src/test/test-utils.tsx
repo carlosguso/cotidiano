@@ -3,18 +3,23 @@ import userEvent from '@testing-library/user-event';
 import type { ReactElement, ReactNode } from 'react';
 import { ProjectsProvider } from '@renderer/context/ProjectsContext';
 import { TasksProvider } from '@renderer/context/TasksContext';
+import { TodosProvider } from '@renderer/context/TodosContext';
 import {
   createInMemoryElectronAPI,
   installInMemoryElectronAPI,
 } from '@renderer/test/in-memory-electron-api';
 import type { Project } from '@renderer/types/project';
 import type { Task } from '@renderer/types/task';
+import type { TodoItemWithTask, TodoList } from '@renderer/types/todo';
 
 type ProviderOptions = {
   /** Seed React state directly (Vitest default — no IPC / database). */
   initialProjects?: Project[];
   initialSelectedProjectId?: string | null;
   initialTasks?: Task[];
+  initialTodoLists?: TodoList[];
+  initialTodoItems?: TodoItemWithTask[];
+  initialSelectedTodoListId?: string | null;
   /**
    * Mount providers without seeded state so they load and persist via `window.electronAPI`,
    * using an in-memory implementation of the preload API (mirrors the SQLite repositories).
@@ -29,16 +34,26 @@ export function renderWithProviders(ui: ReactElement, options: ExtendedRenderOpt
     initialProjects = [],
     initialSelectedProjectId = null,
     initialTasks = [],
+    initialTodoLists = [],
+    initialTodoItems = [],
+    initialSelectedTodoListId = null,
     useInMemoryElectronAPI = false,
     ...renderOptions
   } = options;
 
   if (useInMemoryElectronAPI) {
-    installInMemoryElectronAPI({ projects: initialProjects, tasks: initialTasks });
+    installInMemoryElectronAPI({
+      projects: initialProjects,
+      tasks: initialTasks,
+      todoLists: initialTodoLists,
+      todoItems: initialTodoItems,
+    });
   }
 
   const projectsSeed = useInMemoryElectronAPI ? [] : initialProjects;
   const tasksSeed = useInMemoryElectronAPI ? [] : initialTasks;
+  const todoListsSeed = useInMemoryElectronAPI ? [] : initialTodoLists;
+  const todoItemsSeed = useInMemoryElectronAPI ? [] : initialTodoItems;
 
   function Wrapper({ children }: { children: ReactNode }) {
     return (
@@ -46,7 +61,15 @@ export function renderWithProviders(ui: ReactElement, options: ExtendedRenderOpt
         initialProjects={projectsSeed}
         initialSelectedProjectId={initialSelectedProjectId}
       >
-        <TasksProvider initialTasks={tasksSeed}>{children}</TasksProvider>
+        <TasksProvider initialTasks={tasksSeed}>
+          <TodosProvider
+            initialTodoLists={todoListsSeed}
+            initialTodoItems={todoItemsSeed}
+            initialSelectedTodoListId={initialSelectedTodoListId}
+          >
+            {children}
+          </TodosProvider>
+        </TasksProvider>
       </ProjectsProvider>
     );
   }

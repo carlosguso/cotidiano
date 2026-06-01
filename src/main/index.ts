@@ -3,6 +3,7 @@ import { join } from 'path';
 import { initDatabase, pingDatabase, resolveDatabasePath } from './db';
 import { registerProjectsIpc } from './ipc/projects';
 import { registerTasksIpc } from './ipc/tasks';
+import { registerTodosIpc } from './ipc/todos';
 
 const APP_BACKGROUND = '#09090b';
 
@@ -38,6 +39,7 @@ app.whenReady().then(() => {
 
   registerProjectsIpc();
   registerTasksIpc();
+  registerTodosIpc();
   createWindow();
 
   app.on('activate', () => {

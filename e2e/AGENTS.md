@@ -11,9 +11,11 @@ e2e/
 │   └── tasks-import.json
 ├── helpers/              # Page-object style helpers
 │   ├── projects.ts
-│   └── tasks.ts
+│   ├── tasks.ts
+│   └── todos.ts
 ├── projects.spec.ts
-└── tasks.spec.ts
+├── tasks.spec.ts
+└── todos.spec.ts
 ```
 
 ## Fixture behavior (`electron-app.ts`)

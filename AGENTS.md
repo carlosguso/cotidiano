@@ -10,7 +10,7 @@ Renderer (React)  ←window.electronAPI→  Preload (contextBridge)  ←IPC→  
                                                                          SQLite DB
 ```
 
-- **Persistence**: Projects and tasks are stored in SQLite. Renderer contexts call `window.electronAPI` when available; they also support in-memory fallbacks for tests without the bridge.
+- **Persistence**: Projects, tasks, and todo lists are stored in SQLite. Renderer contexts call `window.electronAPI` when available; they also support in-memory fallbacks for tests without the bridge.
 - **Security**: `contextIsolation: true`, `nodeIntegration: false`. Never import Node APIs in renderer code.
 
 ## Where to look
@@ -43,7 +43,7 @@ npm run db:generate  # drizzle-kit generate after schema changes
 2. **Repository** — `src/main/db/repositories/<entity>.ts`
 3. **IPC** — channel in `src/shared/ipc/channels.ts`, handler in `src/main/ipc/`, expose in `src/preload/index.ts` + `index.d.ts`
 4. **Types** — `src/shared/types/` (re-exported from `src/renderer/src/types/` when needed)
-5. **UI state** — extend `ProjectsContext` / `TasksContext` or add a new provider under `src/renderer/src/context/`
+5. **UI state** — extend `ProjectsContext` / `TasksContext` / `TodosContext` or add a new provider under `src/renderer/src/context/`
 
 ## Conventions
 

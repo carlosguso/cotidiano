@@ -40,17 +40,7 @@ export function ProjectDetail() {
   }, [selectedProject?.id]);
 
   if (!selectedProject) {
-    return (
-      <div className="flex flex-1 items-center justify-center bg-background">
-        <div className="max-w-sm text-center">
-          <p className="text-sm font-medium text-foreground">Select a project</p>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Projects are the home for tasks and documents. Choose one from the sidebar or create a
-            new project to get started.
-          </p>
-        </div>
-      </div>
-    );
+    return null;
   }
 
   const handleArchive = async () => {

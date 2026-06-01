@@ -29,6 +29,13 @@
       "when": 1780336610803,
       "tag": "0003_add_tags_tables",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "6",
+      "when": 1780341167151,
+      "tag": "0004_add_todo_lists",
+      "breakpoints": true
     }
   ]
 }

@@ -29,6 +29,21 @@ describe('createInMemoryElectronAPI', () => {
     expect(await api.tasks.list()).toHaveLength(0);
   });
 
+  it('stores todo lists and items', async () => {
+    const api = createInMemoryElectronAPI();
+
+    const list = await api.todos.createList({ name: 'Today' });
+    const item = await api.todos.createItem({ todoListId: list.id, title: 'Note' });
+
+    expect(await api.todos.listLists()).toHaveLength(1);
+    expect(await api.todos.listItems(list.id)).toEqual([
+      expect.objectContaining({ id: item.id, title: 'Note' }),
+    ]);
+
+    await api.todos.deleteItem(item.id);
+    expect(await api.todos.listItems(list.id)).toHaveLength(0);
+  });
+
   it('deduplicates tags on create', async () => {
     const api = createInMemoryElectronAPI();
     const task = await api.tasks.create({

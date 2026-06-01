@@ -5,13 +5,9 @@ import { createMockProject } from '@renderer/test/fixtures/projects';
 import { renderWithProviders } from '@renderer/test/test-utils';
 
 describe('ProjectDetail', () => {
-  it('shows the empty state when no project is selected', () => {
-    renderWithProviders(<ProjectDetail />);
-
-    expect(screen.getByText('Select a project')).toBeInTheDocument();
-    expect(
-      screen.getByText(/Projects are the home for tasks and documents/),
-    ).toBeInTheDocument();
+  it('renders nothing when no project is selected', () => {
+    const { container } = renderWithProviders(<ProjectDetail />);
+    expect(container).toBeEmptyDOMElement();
   });
 
   it('renders project information when selected', () => {
@@ -96,7 +92,7 @@ describe('ProjectDetail', () => {
     await user.click(await screen.findByRole('button', { name: 'Archive project' }));
 
     await waitFor(() => {
-      expect(screen.getByText('Select a project')).toBeInTheDocument();
+      expect(screen.queryByRole('heading', { name: 'Marketing Site' })).not.toBeInTheDocument();
     });
   });
 
@@ -112,7 +108,7 @@ describe('ProjectDetail', () => {
     await user.click(await screen.findByRole('button', { name: 'Delete project' }));
 
     await waitFor(() => {
-      expect(screen.getByText('Select a project')).toBeInTheDocument();
+      expect(screen.queryByRole('heading', { name: 'Marketing Site' })).not.toBeInTheDocument();
     });
   });
 });

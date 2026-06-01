@@ -10,6 +10,15 @@ import type {
   Task,
   UpdateTaskInput,
 } from '../../../shared/types/task';
+import type {
+  CreateTodoItemInput,
+  CreateTodoListInput,
+  TodoItem,
+  TodoItemWithTask,
+  TodoList,
+  UpdateTodoItemInput,
+  UpdateTodoListInput,
+} from '../../../shared/types/todo';
 
 export type InMemoryElectronAPI = Window['electronAPI'];
 
@@ -21,12 +30,28 @@ function now(): string {
   return new Date().toISOString();
 }
 
+function resolveTodoItemTask(taskId: string | null, tasks: Task[]): Task | null {
+  if (!taskId) return null;
+  return tasks.find((task) => task.id === taskId) ?? null;
+}
+
+function nextTodoItemPosition(items: TodoItem[], todoListId: string): number {
+  const positions = items
+    .filter((item) => item.todoListId === todoListId)
+    .map((item) => item.position);
+  return (positions.length === 0 ? -1 : Math.max(...positions)) + 1;
+}
+
 export function createInMemoryElectronAPI(seed?: {
   projects?: Project[];
   tasks?: Task[];
+  todoLists?: TodoList[];
+  todoItems?: TodoItemWithTask[];
 }): InMemoryElectronAPI {
   let projects = [...(seed?.projects ?? [])];
   let tasks = [...(seed?.tasks ?? [])];
+  let todoLists = [...(seed?.todoLists ?? [])];
+  let todoItems = [...(seed?.todoItems ?? [])];
 
   return {
     platform: 'darwin',
@@ -133,9 +158,122 @@ export function createInMemoryElectronAPI(seed?: {
       },
       delete: async (id: string) => {
         tasks = tasks.filter((task) => task.id !== id);
+        todoItems = todoItems.filter((item) => item.taskId !== id);
       },
       deleteByProject: async (projectId: string) => {
         tasks = tasks.filter((task) => task.projectId !== projectId);
+        todoItems = todoItems.filter((item) => {
+          if (!item.taskId) return true;
+          const task = tasks.find((entry) => entry.id === item.taskId);
+          return Boolean(task);
+        });
+      },
+    },
+    todos: {
+      listLists: async () => [...todoLists].sort((a, b) => a.name.localeCompare(b.name)),
+      createList: async (input: CreateTodoListInput) => {
+        const timestamp = now();
+        const list: TodoList = {
+          id: createId(),
+          name: input.name.trim(),
+          createdAt: timestamp,
+          updatedAt: timestamp,
+        };
+        todoLists = [...todoLists, list].sort((a, b) => a.name.localeCompare(b.name));
+        return list;
+      },
+      updateList: async (id: string, input: UpdateTodoListInput) => {
+        const index = todoLists.findIndex((list) => list.id === id);
+        if (index === -1) {
+          throw new Error(`Todo list not found: ${id}`);
+        }
+
+        const current = todoLists[index];
+        const updated: TodoList = {
+          ...current,
+          ...input,
+          name: input.name?.trim() ?? current.name,
+          updatedAt: now(),
+        };
+        todoLists = todoLists
+          .map((list) => (list.id === id ? updated : list))
+          .sort((a, b) => a.name.localeCompare(b.name));
+        return updated;
+      },
+      deleteList: async (id: string) => {
+        const index = todoLists.findIndex((list) => list.id === id);
+        if (index === -1) {
+          throw new Error(`Todo list not found: ${id}`);
+        }
+        todoLists = todoLists.filter((list) => list.id !== id);
+        todoItems = todoItems.filter((item) => item.todoListId !== id);
+      },
+      listItems: async (todoListId: string) => {
+        return todoItems
+          .filter((item) => item.todoListId === todoListId)
+          .sort((a, b) => a.position - b.position)
+          .map((item) => ({
+            ...item,
+            task: resolveTodoItemTask(item.taskId, tasks),
+          }));
+      },
+      createItem: async (input: CreateTodoItemInput) => {
+        const linkedTask = resolveTodoItemTask(input.taskId ?? null, tasks);
+        if (input.taskId && !linkedTask) {
+          throw new Error(`Task not found: ${input.taskId}`);
+        }
+
+        const title = linkedTask?.title ?? input.title?.trim() ?? '';
+        if (!title) {
+          throw new Error('Todo item title is required when not linking a task');
+        }
+
+        const timestamp = now();
+        const item: TodoItemWithTask = {
+          id: createId(),
+          todoListId: input.todoListId,
+          taskId: input.taskId ?? null,
+          title,
+          completed: input.completed ?? false,
+          position: input.position ?? nextTodoItemPosition(todoItems, input.todoListId),
+          createdAt: timestamp,
+          updatedAt: timestamp,
+          task: linkedTask,
+        };
+        todoItems = [...todoItems, item];
+        return item;
+      },
+      updateItem: async (id: string, input: UpdateTodoItemInput) => {
+        const index = todoItems.findIndex((item) => item.id === id);
+        if (index === -1) {
+          throw new Error(`Todo item not found: ${id}`);
+        }
+
+        const current = todoItems[index];
+        const taskId = input.taskId !== undefined ? input.taskId : current.taskId;
+        const linkedTask = resolveTodoItemTask(taskId, tasks);
+
+        if (input.taskId && !linkedTask) {
+          throw new Error(`Task not found: ${input.taskId}`);
+        }
+
+        const updated: TodoItemWithTask = {
+          ...current,
+          ...input,
+          taskId,
+          title:
+            linkedTask?.title ??
+            (input.title !== undefined ? input.title.trim() : current.title),
+          completed: input.completed !== undefined ? input.completed : current.completed,
+          position: input.position !== undefined ? input.position : current.position,
+          task: linkedTask,
+          updatedAt: now(),
+        };
+        todoItems = todoItems.map((item) => (item.id === id ? updated : item));
+        return updated;
+      },
+      deleteItem: async (id: string) => {
+        todoItems = todoItems.filter((item) => item.id !== id);
       },
     },
   };
@@ -144,6 +282,8 @@ export function createInMemoryElectronAPI(seed?: {
 export function installInMemoryElectronAPI(seed?: {
   projects?: Project[];
   tasks?: Task[];
+  todoLists?: TodoList[];
+  todoItems?: TodoItemWithTask[];
 }): InMemoryElectronAPI {
   window.electronAPI = createInMemoryElectronAPI(seed);
   return window.electronAPI;

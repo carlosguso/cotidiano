@@ -19,7 +19,12 @@ A desktop app built with [Electron](https://www.electronjs.org/), [React](https:
   - Collapsible sidebar with project list and detail view
   - Unified create/edit modal with identifier suggestion and color picker
   - Confirmation dialogs for destructive actions
-- **In-memory state** — project data lives in React context only (persistence not implemented yet)
+- **Tasks** — per-project tasks with status columns, tags, import, and archive
+- **Todo lists** — session lists mixing misc items and tasks from any project
+  - Create, edit, and delete lists from the sidebar
+  - Add misc notes or link existing project tasks
+  - Check off items for the session without changing linked task status
+- **SQLite persistence** — projects, tasks, and todos stored locally via the main process
 
 ## AI agent context (`AGENTS.md`)
 
@@ -37,7 +42,8 @@ cotidiano/
 │       │   ├── projects/        # ProjectModal, ProjectDetail, etc.
 │       │   ├── sidebar/         # Sidebar
 │       │   └── ui/              # shadcn/ui components
-│       ├── context/             # ProjectsContext
+│       ├── context/             # ProjectsContext, TasksContext, TodosContext
+│       ├── components/todos/    # Todo list UI
 │       ├── layouts/             # AppLayout
 │       ├── lib/                 # utils, projectColors
 │       ├── test/                # Vitest setup, fixtures, helpers

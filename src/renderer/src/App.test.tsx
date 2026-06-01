@@ -7,7 +7,7 @@ describe('App integration', () => {
   it('creates a project through the full UI flow (in-memory state)', async () => {
     const { user } = renderWithProviders(<App />);
 
-    expect(screen.getByText('Select a project')).toBeInTheDocument();
+    expect(screen.getByText('Get started')).toBeInTheDocument();
 
     await user.click(screen.getByRole('button', { name: 'Create project' }));
     expect(await screen.findByRole('heading', { name: 'Create project' })).toBeInTheDocument();
@@ -66,7 +66,7 @@ describe('App integration', () => {
     await user.click(await screen.findByRole('button', { name: 'Archive project' }));
 
     await waitFor(() => {
-      expect(screen.getByText('Select a project')).toBeInTheDocument();
+      expect(screen.getByText('Get started')).toBeInTheDocument();
     });
   });
 });

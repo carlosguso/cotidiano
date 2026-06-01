@@ -4,7 +4,7 @@ import { createProject, openProjectActions } from './helpers/projects';
 test.describe('App launch', () => {
   test('shows the initial empty state', async ({ window }) => {
     await expect(window.getByText('Cotidiano')).toBeVisible();
-    await expect(window.getByText('Select a project')).toBeVisible();
+    await expect(window.getByText('Get started')).toBeVisible();
     await expect(window.getByText('No projects yet')).toBeVisible();
   });
 });
@@ -57,7 +57,7 @@ test.describe('Project lifecycle', () => {
     await dialog.getByRole('button', { name: 'Archive project' }).click();
     await dialog.waitFor({ state: 'hidden' });
 
-    await expect(window.getByText('Select a project')).toBeVisible();
+    await expect(window.getByText('Get started')).toBeVisible();
     await expect(window.getByText('No projects yet')).toBeVisible();
   });
 
@@ -75,7 +75,7 @@ test.describe('Project lifecycle', () => {
     await dialog.getByRole('button', { name: 'Delete project' }).click();
     await dialog.waitFor({ state: 'hidden' });
 
-    await expect(window.getByText('Select a project')).toBeVisible();
+    await expect(window.getByText('Get started')).toBeVisible();
     await expect(window.getByRole('button', { name: /Delete Me/ })).toHaveCount(0);
   });
 });

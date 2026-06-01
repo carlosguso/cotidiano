@@ -6,10 +6,11 @@ Linear-inspired project/task UI for a desktop Electron app.
 
 ```
 App.tsx
-  ProjectsProvider → TasksProvider → AppLayout
-                                      ├── Sidebar
-                                      ├── ProjectDetail
-                                      └── ProjectModal (create)
+  ProjectsProvider → TasksProvider → TodosProvider → AppLayout
+                                                      ├── Sidebar
+                                                      ├── MainContent (ProjectDetail | TodoListDetail)
+                                                      ├── ProjectModal (create)
+                                                      └── TodoListModal (create)
 ```
 
 ## State
@@ -17,7 +18,7 @@ App.tsx
 | Layer | Location | Notes |
 |-------|----------|-------|
 | Server truth | SQLite via `electronAPI` | Loaded on mount in contexts |
-| UI state | React context | `ProjectsContext`, `TasksContext` |
+| UI state | React context | `ProjectsContext`, `TasksContext`, `TodosContext` |
 | Local UI | component `useState` | modals, sidebar collapse |
 
 Contexts dual-mode: if `window.electronAPI` exists, persist via IPC; else in-memory (tests with seeded `initialProjects` / `initialTasks`).

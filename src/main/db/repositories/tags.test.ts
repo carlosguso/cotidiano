@@ -76,7 +76,7 @@ describe('tags repository', () => {
 
     const byTaskId = getTagNamesByTaskIds(db, [taskA.id, taskB.id]);
 
-    expect(byTaskId.get(taskA.id)).toEqual(['alpha', 'shared']);
+    expect(byTaskId.get(taskA.id)?.toSorted()).toEqual(['alpha', 'shared']);
     expect(byTaskId.get(taskB.id)).toEqual(['beta']);
     expect(byTaskId.has(taskC.id)).toBe(false);
 

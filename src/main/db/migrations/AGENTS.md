@@ -16,6 +16,7 @@ Drizzle-generated SQL files (`0000_init.sql`, …) plus `meta/` snapshots and `_
 | `0001_add_projects` | `projects` |
 | `0002_add_tasks` | `tasks` |
 | `0003_add_tags_tables` | `tags`, `task_tags` |
+| `0004_add_todo_lists` | `todo_lists`, `todo_items` |
 
 ## Agent checklist after schema change
 

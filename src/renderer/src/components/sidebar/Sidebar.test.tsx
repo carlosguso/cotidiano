@@ -1,12 +1,29 @@
+import type { ComponentProps } from 'react';
 import { screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import { Sidebar } from '@renderer/components/sidebar/Sidebar';
 import { createMockProject } from '@renderer/test/fixtures/projects';
 import { renderWithProviders } from '@renderer/test/test-utils';
 
+function renderSidebar(
+  props: Partial<ComponentProps<typeof Sidebar>> = {},
+  options: Parameters<typeof renderWithProviders>[1] = {},
+) {
+  return renderWithProviders(
+    <Sidebar
+      onCreateProject={vi.fn()}
+      onCreateTodoList={vi.fn()}
+      onSelectProject={vi.fn()}
+      onSelectTodoList={vi.fn()}
+      {...props}
+    />,
+    options,
+  );
+}
+
 describe('Sidebar', () => {
   it('renders the empty state', () => {
-    renderWithProviders(<Sidebar onCreateProject={vi.fn()} />);
+    renderSidebar();
 
     expect(screen.getByText('No projects yet')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Create your first project' })).toBeInTheDocument();
@@ -14,16 +31,14 @@ describe('Sidebar', () => {
 
   it('renders active projects', () => {
     const project = createMockProject();
-    renderWithProviders(<Sidebar onCreateProject={vi.fn()} />, {
-      initialProjects: [project],
-    });
+    renderSidebar({}, { initialProjects: [project] });
 
     expect(screen.getByText('Marketing Site')).toBeInTheDocument();
   });
 
   it('calls onCreateProject from the header action', async () => {
     const onCreateProject = vi.fn();
-    const { user } = renderWithProviders(<Sidebar onCreateProject={onCreateProject} />);
+    const { user } = renderSidebar({ onCreateProject });
 
     await user.click(screen.getByRole('button', { name: 'Create project' }));
 
@@ -32,9 +47,7 @@ describe('Sidebar', () => {
 
   it('collapses and expands the sidebar', async () => {
     const project = createMockProject();
-    const { user } = renderWithProviders(<Sidebar onCreateProject={vi.fn()} />, {
-      initialProjects: [project],
-    });
+    const { user } = renderSidebar({}, { initialProjects: [project] });
 
     expect(screen.getByText('Marketing Site')).toBeInTheDocument();
 
