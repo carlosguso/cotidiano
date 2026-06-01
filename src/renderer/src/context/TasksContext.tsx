@@ -84,7 +84,7 @@ export function TasksProvider({
           ...input,
           title: input.title?.trim() ?? task.title,
           description: input.description?.trim() ?? task.description,
-          tags: input.tags ? normalizeTags(input.tags) : task.tags,
+          tags: input.tags !== undefined ? normalizeTags(input.tags) : task.tags,
           updatedAt: now(),
         };
       }),

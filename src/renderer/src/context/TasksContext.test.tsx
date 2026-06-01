@@ -138,6 +138,36 @@ describe('TasksContext', () => {
     expect(result.current.tasks[0].tags).toEqual(['copy', 'urgent']);
   });
 
+  it('clears all tags when an empty array is provided', () => {
+    const task = createMockTask({ tags: ['design', 'copy'] });
+    const { result } = renderHook(() => useTasks(), {
+      wrapper: ({ children }) => (
+        <TasksProvider initialTasks={[task]}>{children}</TasksProvider>
+      ),
+    });
+
+    act(() => {
+      result.current.updateTask(task.id, { tags: [] });
+    });
+
+    expect(result.current.tasks[0].tags).toEqual([]);
+  });
+
+  it('preserves tags when tags are omitted from the update', () => {
+    const task = createMockTask({ tags: ['design'] });
+    const { result } = renderHook(() => useTasks(), {
+      wrapper: ({ children }) => (
+        <TasksProvider initialTasks={[task]}>{children}</TasksProvider>
+      ),
+    });
+
+    act(() => {
+      result.current.updateTask(task.id, { title: 'Updated title' });
+    });
+
+    expect(result.current.tasks[0].tags).toEqual(['design']);
+  });
+
   it('deletes a task', () => {
     const task = createMockTask();
     const { result } = renderHook(() => useTasks(), {
