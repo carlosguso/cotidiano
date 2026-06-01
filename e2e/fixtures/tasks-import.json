@@ -1,0 +1,19 @@
+[
+  {
+    "title": "Set up analytics",
+    "description": "Configure tracking for the marketing site",
+    "status": "todo",
+    "tags": ["analytics", "setup"]
+  },
+  {
+    "title": "Review homepage copy",
+    "description": "Proofread hero and feature sections",
+    "status": "in_progress",
+    "tags": ["copy", "review"]
+  },
+  {
+    "title": "Ship launch checklist",
+    "status": "done",
+    "tags": ["launch"]
+  }
+]

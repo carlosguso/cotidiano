@@ -23,9 +23,38 @@ describe('ProjectDetail', () => {
 
     expect(screen.getByRole('heading', { name: 'Marketing Site' })).toBeInTheDocument();
     expect(screen.getByText('MKT')).toBeInTheDocument();
+    expect(screen.getByRole('tab', { name: 'Overview' })).toHaveAttribute('aria-selected', 'true');
+    expect(screen.getByRole('tab', { name: 'Tasks' })).toHaveAttribute('aria-selected', 'false');
+    expect(screen.getByRole('heading', { name: 'Description' })).toBeInTheDocument();
     expect(screen.getByText('A marketing website project')).toBeInTheDocument();
-    expect(screen.getByText('Tasks')).toBeInTheDocument();
-    expect(screen.getByText('Documents')).toBeInTheDocument();
+    expect(screen.getByText('Created')).toBeInTheDocument();
+    expect(screen.getByText('Updated')).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Add task' })).not.toBeInTheDocument();
+    expect(screen.queryByText('Documents will live inside this project.')).not.toBeInTheDocument();
+  });
+
+  it('switches between overview, tasks, and documents tabs', async () => {
+    const project = createMockProject();
+    const { user } = renderWithProviders(<ProjectDetail />, {
+      initialProjects: [project],
+      initialSelectedProjectId: project.id,
+    });
+
+    await user.click(screen.getByRole('tab', { name: 'Tasks' }));
+    expect(screen.getByRole('button', { name: 'Add task' })).toBeInTheDocument();
+    expect(screen.queryByText('A marketing website project')).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole('tab', { name: 'Documents' }));
+    expect(screen.getByRole('tab', { name: 'Documents' })).toHaveAttribute(
+      'aria-selected',
+      'true',
+    );
+    expect(screen.queryByRole('button', { name: 'Add task' })).not.toBeInTheDocument();
+    expect(screen.getByText('Documents will live inside this project.')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('tab', { name: 'Overview' }));
+    expect(screen.getByText('A marketing website project')).toBeInTheDocument();
+    expect(screen.getByText('Created')).toBeInTheDocument();
   });
 
   it('opens the edit modal from the actions menu', async () => {

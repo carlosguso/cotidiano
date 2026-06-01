@@ -1,10 +1,13 @@
 import { useEffect, useState } from 'react';
 import { Archive, MoreVertical, Pencil, Trash2 } from 'lucide-react';
 import { useProjects } from '@renderer/context/ProjectsContext';
+import { useTasks } from '@renderer/context/TasksContext';
+import { TaskList } from '@renderer/components/tasks/TaskList';
 import { ProjectIcon } from '@renderer/components/projects/ProjectIcon';
 import { ProjectModal } from '@renderer/components/projects/ProjectModal';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import { Button } from '@/components/ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -13,6 +16,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 type ConfirmAction = 'archive' | 'delete' | null;
+type ProjectTab = 'overview' | 'tasks' | 'documents';
 
 function formatDate(value: string): string {
   return new Intl.DateTimeFormat(undefined, {
@@ -24,12 +28,15 @@ function formatDate(value: string): string {
 
 export function ProjectDetail() {
   const { selectedProject, updateProject, deleteProject, selectProject } = useProjects();
+  const { deleteTasksForProject } = useTasks();
   const [editModalOpen, setEditModalOpen] = useState(false);
   const [confirmAction, setConfirmAction] = useState<ConfirmAction>(null);
+  const [activeTab, setActiveTab] = useState<ProjectTab>('overview');
 
   useEffect(() => {
     setEditModalOpen(false);
     setConfirmAction(null);
+    setActiveTab('overview');
   }, [selectedProject?.id]);
 
   if (!selectedProject) {
@@ -52,12 +59,13 @@ export function ProjectDetail() {
   };
 
   const handleDelete = () => {
+    deleteTasksForProject(selectedProject.id);
     deleteProject(selectedProject.id);
   };
 
   return (
     <div className="flex flex-1 flex-col overflow-hidden bg-background">
-      <header className="border-b border-border px-8 py-6">
+      <header className="border-border px-8 py-6 ">
         <div className="flex items-start justify-between gap-4">
           <div className="flex min-w-0 items-start gap-4">
             <ProjectIcon project={selectedProject} size="lg" />
@@ -70,10 +78,6 @@ export function ProjectDetail() {
                   {selectedProject.identifier}
                 </span>
               </div>
-              <p className="text-sm text-muted-foreground">
-                Created {formatDate(selectedProject.createdAt)} · Updated{' '}
-                {formatDate(selectedProject.updatedAt)}
-              </p>
             </div>
           </div>
 
@@ -104,40 +108,84 @@ export function ProjectDetail() {
         </div>
       </header>
 
-      <div className="flex-1 overflow-y-auto px-8 py-6">
-        <div className="mx-auto max-w-3xl space-y-8">
-          {selectedProject.description ? (
-            <section className="space-y-3">
-              <h2 className="text-sm font-medium text-foreground">Description</h2>
-              <p className="text-sm leading-relaxed text-muted-foreground">
-                {selectedProject.description}
-              </p>
-            </section>
-          ) : null}
-
-          <section className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h2 className="text-sm font-medium text-foreground">Tasks</h2>
-              <span className="text-xs text-muted-foreground">Coming soon</span>
-            </div>
-            <div className="rounded-lg border border-dashed border-border px-4 py-8 text-center">
-              <p className="text-sm text-muted-foreground">Tasks will live inside this project.</p>
-            </div>
-          </section>
-
-          <section className="space-y-3">
-            <div className="flex items-center justify-between">
-              <h2 className="text-sm font-medium text-foreground">Documents</h2>
-              <span className="text-xs text-muted-foreground">Coming soon</span>
-            </div>
-            <div className="rounded-lg border border-dashed border-border px-4 py-8 text-center">
-              <p className="text-sm text-muted-foreground">
-                Documents will live inside this project.
-              </p>
-            </div>
-          </section>
+      <Tabs
+        value={activeTab}
+        onValueChange={(value) => setActiveTab(value as ProjectTab)}
+        className="flex flex-1 flex-col gap-0"
+      >
+        <div className="border-b border-border">
+          <TabsList
+            aria-label="Project views"
+            className="h-auto gap-1 rounded-none border-0 bg-transparent p-0"
+          >
+            <TabsTrigger
+              value="overview"
+              className="rounded-b-none border border-border border-b-0 bg-muted/45 px-4 py-2 text-sm text-muted-foreground data-[state=active]:-mb-px data-[state=active]:bg-background data-[state=active]:text-foreground"
+            >
+              Overview
+            </TabsTrigger>
+            <TabsTrigger
+              value="tasks"
+              className="rounded-b-none border border-border border-b-0 bg-muted/45 px-4 py-2 text-sm text-muted-foreground data-[state=active]:-mb-px data-[state=active]:bg-background data-[state=active]:text-foreground"
+            >
+              Tasks
+            </TabsTrigger>
+            <TabsTrigger
+              value="documents"
+              className="rounded-b-none border border-border border-b-0 bg-muted/45 px-4 py-2 text-sm text-muted-foreground data-[state=active]:-mb-px data-[state=active]:bg-background data-[state=active]:text-foreground"
+            >
+              Documents
+            </TabsTrigger>
+          </TabsList>
         </div>
-      </div>
+
+        <div className="flex-1 overflow-y-auto px-8 py-6">
+          <div className="mx-auto max-w-3xl space-y-8">
+            <TabsContent value="overview" className="space-y-6">
+              <section className="space-y-3">
+                <h2 className="text-sm font-medium text-foreground">Description</h2>
+                {selectedProject.description ? (
+                  <p className="text-sm leading-relaxed text-muted-foreground">
+                    {selectedProject.description}
+                  </p>
+                ) : (
+                  <p className="text-sm text-muted-foreground">No description yet.</p>
+                )}
+              </section>
+
+              <section className="space-y-3">
+                <h2 className="text-sm font-medium text-foreground">Details</h2>
+                <dl className="space-y-2 text-sm">
+                  <div className="flex gap-2">
+                    <dt className="text-muted-foreground">Created</dt>
+                    <dd className="text-foreground">{formatDate(selectedProject.createdAt)}</dd>
+                  </div>
+                  <div className="flex gap-2">
+                    <dt className="text-muted-foreground">Updated</dt>
+                    <dd className="text-foreground">{formatDate(selectedProject.updatedAt)}</dd>
+                  </div>
+                </dl>
+              </section>
+            </TabsContent>
+
+            <TabsContent value="tasks">
+              <TaskList projectId={selectedProject.id} />
+            </TabsContent>
+
+            <TabsContent value="documents" className="space-y-3">
+              <div className="flex items-center justify-between">
+                <h2 className="text-sm font-medium text-foreground">Documents</h2>
+                <span className="text-xs text-muted-foreground">Coming soon</span>
+              </div>
+              <div className="rounded-lg border border-dashed border-border px-4 py-8 text-center">
+                <p className="text-sm text-muted-foreground">
+                  Documents will live inside this project.
+                </p>
+              </div>
+            </TabsContent>
+          </div>
+        </div>
+      </Tabs>
 
       <ProjectModal
         project={selectedProject}
