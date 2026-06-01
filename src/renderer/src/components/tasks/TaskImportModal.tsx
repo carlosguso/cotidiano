@@ -79,7 +79,7 @@ export function TaskImportModal({ open, projectId, onClose }: TaskImportModalPro
     await processFile(file);
   };
 
-  const handleImport = () => {
+  const handleImport = async () => {
     if (!parsedTasks || parsedTasks.length === 0) {
       setError('Choose a JSON file with at least one task to import.');
       return;
@@ -88,8 +88,13 @@ export function TaskImportModal({ open, projectId, onClose }: TaskImportModalPro
     const inputs = toCreateTaskInputs(projectId, parsedTasks).map(
       ({ projectId: _, ...input }) => input,
     );
-    importTasks(projectId, inputs);
-    handleClose();
+
+    try {
+      await importTasks(projectId, inputs);
+      handleClose();
+    } catch {
+      setError('Could not import tasks. Please try again.');
+    }
   };
 
   return (

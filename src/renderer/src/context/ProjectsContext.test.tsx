@@ -1,7 +1,8 @@
-import { act, renderHook } from '@testing-library/react';
+import { act, renderHook, waitFor } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { ProjectsProvider, useProjects } from '@renderer/context/ProjectsContext';
 import { createMockProject } from '@renderer/test/fixtures/projects';
+import { installInMemoryElectronAPI } from '@renderer/test/in-memory-electron-api';
 
 describe('ProjectsContext', () => {
   it('throws when used outside the provider', () => {
@@ -10,13 +11,13 @@ describe('ProjectsContext', () => {
     );
   });
 
-  it('creates a project and selects it', () => {
+  it('creates a project and selects it', async () => {
     const { result } = renderHook(() => useProjects(), {
       wrapper: ProjectsProvider,
     });
 
-    act(() => {
-      result.current.createProject({
+    await act(async () => {
+      await result.current.createProject({
         name: 'Marketing Site',
         identifier: 'mkt',
         description: 'Website refresh',
@@ -37,7 +38,7 @@ describe('ProjectsContext', () => {
     expect(result.current.activeProjects).toHaveLength(1);
   });
 
-  it('updates a project', () => {
+  it('updates a project', async () => {
     const project = createMockProject();
     const { result } = renderHook(() => useProjects(), {
       wrapper: ({ children }) => (
@@ -47,8 +48,8 @@ describe('ProjectsContext', () => {
       ),
     });
 
-    act(() => {
-      result.current.updateProject(project.id, {
+    await act(async () => {
+      await result.current.updateProject(project.id, {
         name: 'Updated Name',
         identifier: 'upd',
         description: 'Updated description',
@@ -65,7 +66,7 @@ describe('ProjectsContext', () => {
     expect(result.current.projects[0].updatedAt).not.toBe(project.updatedAt);
   });
 
-  it('deletes a project and clears selection', () => {
+  it('deletes a project and clears selection', async () => {
     const project = createMockProject();
     const { result } = renderHook(() => useProjects(), {
       wrapper: ({ children }) => (
@@ -75,8 +76,8 @@ describe('ProjectsContext', () => {
       ),
     });
 
-    act(() => {
-      result.current.deleteProject(project.id);
+    await act(async () => {
+      await result.current.deleteProject(project.id);
     });
 
     expect(result.current.projects).toHaveLength(0);
@@ -118,5 +119,60 @@ describe('ProjectsContext', () => {
       'Alpha',
       'Zebra',
     ]);
+  });
+
+  it('loads projects from the database API on mount', async () => {
+    const stored = createMockProject({ id: 'stored-1', name: 'Stored Project' });
+    installInMemoryElectronAPI({ projects: [stored] });
+
+    const { result } = renderHook(() => useProjects(), {
+      wrapper: ProjectsProvider,
+    });
+
+    expect(result.current.isLoading).toBe(true);
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    expect(result.current.projects).toEqual([stored]);
+  });
+
+  it('persists create, update, and delete through the database API', async () => {
+    installInMemoryElectronAPI();
+
+    const { result } = renderHook(() => useProjects(), {
+      wrapper: ProjectsProvider,
+    });
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    await act(async () => {
+      await result.current.createProject({
+        name: 'API Project',
+        identifier: 'api',
+      });
+    });
+
+    const projectId = result.current.projects[0].id;
+
+    await act(async () => {
+      await result.current.updateProject(projectId, { name: 'Renamed API Project' });
+    });
+
+    expect(result.current.projects[0].name).toBe('Renamed API Project');
+
+    const listed = await window.electronAPI.projects.list();
+    expect(listed).toHaveLength(1);
+    expect(listed[0].name).toBe('Renamed API Project');
+
+    await act(async () => {
+      await result.current.deleteProject(projectId);
+    });
+
+    expect(result.current.projects).toHaveLength(0);
+    expect(await window.electronAPI.projects.list()).toHaveLength(0);
   });
 });

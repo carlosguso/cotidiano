@@ -60,7 +60,7 @@ export function ProjectModal({ open, onClose, project = null }: ProjectModalProp
     }
   }, [name, identifierTouched, isEditing]);
 
-  const handleSubmit = (event: FormEvent) => {
+  const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
 
     const trimmedName = name.trim();
@@ -86,23 +86,27 @@ export function ProjectModal({ open, onClose, project = null }: ProjectModalProp
       return;
     }
 
-    if (isEditing) {
-      updateProject(project.id, {
-        name: trimmedName,
-        identifier: trimmedIdentifier,
-        description,
-        color,
-      });
-    } else {
-      createProject({
-        name: trimmedName,
-        identifier: trimmedIdentifier,
-        description,
-        color,
-      });
-    }
+    try {
+      if (isEditing) {
+        await updateProject(project.id, {
+          name: trimmedName,
+          identifier: trimmedIdentifier,
+          description,
+          color,
+        });
+      } else {
+        await createProject({
+          name: trimmedName,
+          identifier: trimmedIdentifier,
+          description,
+          color,
+        });
+      }
 
-    onClose();
+      onClose();
+    } catch {
+      setError('Could not save the project. Please try again.');
+    }
   };
 
   return (
