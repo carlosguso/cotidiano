@@ -31,7 +31,46 @@ describe('TasksContext', () => {
       title: 'Design homepage',
       description: 'Wireframe the hero section',
       status: 'in_progress',
+      tags: [],
     });
+  });
+
+  it('creates a task with tags', () => {
+    const { result } = renderHook(() => useTasks(), {
+      wrapper: TasksProvider,
+    });
+
+    act(() => {
+      result.current.createTask({
+        projectId: 'project-1',
+        title: 'Design homepage',
+        tags: ['  design  ', 'Design', 'copy'],
+      });
+    });
+
+    expect(result.current.tasks[0].tags).toEqual(['design', 'copy']);
+  });
+
+  it('returns unique tags used in a project', () => {
+    const taskA = createMockTask({
+      id: 'task-a',
+      projectId: 'project-1',
+      tags: ['Design', 'copy'],
+    });
+    const taskB = createMockTask({
+      id: 'task-b',
+      projectId: 'project-1',
+      tags: ['design', 'urgent'],
+    });
+    const taskC = createMockTask({ id: 'task-c', projectId: 'project-2', tags: ['other'] });
+
+    const { result } = renderHook(() => useTasks(), {
+      wrapper: ({ children }) => (
+        <TasksProvider initialTasks={[taskA, taskB, taskC]}>{children}</TasksProvider>
+      ),
+    });
+
+    expect(result.current.tagsForProject('project-1')).toEqual(['copy', 'Design', 'urgent']);
   });
 
   it('returns tasks scoped to a project', () => {
@@ -80,6 +119,23 @@ describe('TasksContext', () => {
       status: 'done',
     });
     expect(result.current.tasks[0].updatedAt).not.toBe(task.updatedAt);
+  });
+
+  it('updates task tags', () => {
+    const task = createMockTask({ tags: ['design'] });
+    const { result } = renderHook(() => useTasks(), {
+      wrapper: ({ children }) => (
+        <TasksProvider initialTasks={[task]}>{children}</TasksProvider>
+      ),
+    });
+
+    act(() => {
+      result.current.updateTask(task.id, {
+        tags: ['copy', 'copy', ' urgent '],
+      });
+    });
+
+    expect(result.current.tasks[0].tags).toEqual(['copy', 'urgent']);
   });
 
   it('deletes a task', () => {

@@ -7,6 +7,7 @@ export function createMockTask(overrides: Partial<Task> = {}): Task {
     title: 'Write landing page copy',
     description: 'Draft hero and feature sections',
     status: 'todo',
+    tags: [],
     createdAt: '2024-06-01T12:00:00.000Z',
     updatedAt: '2024-06-01T12:00:00.000Z',
     ...overrides,

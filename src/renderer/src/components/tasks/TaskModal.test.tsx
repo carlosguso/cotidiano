@@ -12,6 +12,7 @@ describe('TaskModal', () => {
     expect(screen.getByLabelText('Title')).toBeInTheDocument();
     expect(screen.getByLabelText('Description')).toBeInTheDocument();
     expect(screen.getByLabelText('Status')).toBeInTheDocument();
+    expect(screen.getByLabelText('Tags')).toBeInTheDocument();
   });
 
   it('shows validation errors for missing title', async () => {
@@ -64,5 +65,25 @@ describe('TaskModal', () => {
     await waitFor(() => {
       expect(onClose).toHaveBeenCalledOnce();
     });
+  });
+
+  it('adds tags from the tags field', async () => {
+    const { user } = renderWithProviders(
+      <TaskModal open projectId="project-1" onClose={vi.fn()} />,
+    );
+
+    await user.type(screen.getByLabelText('Tags'), 'design{Enter}');
+    await user.type(screen.getByLabelText('Tags'), 'copy{Enter}');
+
+    expect(screen.getByRole('button', { name: 'Remove tag design' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Remove tag copy' })).toBeInTheDocument();
+  });
+
+  it('renders existing tags in edit mode', () => {
+    const task = createMockTask({ tags: ['design', 'copy'] });
+    renderWithProviders(<TaskModal open task={task} onClose={vi.fn()} />);
+
+    expect(screen.getByRole('button', { name: 'Remove tag design' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Remove tag copy' })).toBeInTheDocument();
   });
 });

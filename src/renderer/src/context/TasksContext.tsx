@@ -7,10 +7,12 @@ import {
   type ReactNode,
 } from 'react';
 import type { CreateTaskInput, Task, UpdateTaskInput } from '@renderer/types/task';
+import { normalizeTags } from '@renderer/lib/taskTags';
 
 type TasksContextValue = {
   tasks: Task[];
   tasksForProject: (projectId: string) => Task[];
+  tagsForProject: (projectId: string) => string[];
   createTask: (input: CreateTaskInput) => Task;
   updateTask: (taskId: string, input: UpdateTaskInput) => void;
   deleteTask: (taskId: string) => void;
@@ -44,6 +46,17 @@ export function TasksProvider({
     [tasks],
   );
 
+  const tagsForProject = useCallback(
+    (projectId: string) => {
+      const tags = tasks
+        .filter((task) => task.projectId === projectId)
+        .flatMap((task) => task.tags);
+
+      return normalizeTags(tags).sort((a, b) => a.localeCompare(b));
+    },
+    [tasks],
+  );
+
   const createTask = useCallback((input: CreateTaskInput): Task => {
     const timestamp = now();
     const task: Task = {
@@ -52,6 +65,7 @@ export function TasksProvider({
       title: input.title.trim(),
       description: input.description?.trim() ?? '',
       status: input.status ?? 'todo',
+      tags: normalizeTags(input.tags ?? []),
       createdAt: timestamp,
       updatedAt: timestamp,
     };
@@ -70,6 +84,7 @@ export function TasksProvider({
           ...input,
           title: input.title?.trim() ?? task.title,
           description: input.description?.trim() ?? task.description,
+          tags: input.tags ? normalizeTags(input.tags) : task.tags,
           updatedAt: now(),
         };
       }),
@@ -88,12 +103,13 @@ export function TasksProvider({
     () => ({
       tasks,
       tasksForProject,
+      tagsForProject,
       createTask,
       updateTask,
       deleteTask,
       deleteTasksForProject,
     }),
-    [tasks, tasksForProject, createTask, updateTask, deleteTask, deleteTasksForProject],
+    [tasks, tasksForProject, tagsForProject, createTask, updateTask, deleteTask, deleteTasksForProject],
   );
 
   return <TasksContext.Provider value={value}>{children}</TasksContext.Provider>;

@@ -56,6 +56,23 @@ describe('TaskList', () => {
     expect(within(doneSection).getByText('Kickoff meeting')).toBeInTheDocument();
   });
 
+  it('shows tags on task rows', () => {
+    const project = createMockProject();
+    const task = createMockTask({
+      projectId: project.id,
+      tags: ['design', 'copy'],
+    });
+
+    renderWithProviders(<TaskList projectId={project.id} />, {
+      initialProjects: [project],
+      initialSelectedProjectId: project.id,
+      initialTasks: [task],
+    });
+
+    expect(screen.getByText('design')).toBeInTheDocument();
+    expect(screen.getByText('copy')).toBeInTheDocument();
+  });
+
   it('changes task status from the row status menu', async () => {
     const project = createMockProject();
     const task = createMockTask({ projectId: project.id, status: 'todo' });

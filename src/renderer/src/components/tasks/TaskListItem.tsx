@@ -61,17 +61,31 @@ export function TaskListItem({ task, onEdit, onDelete, onStatusChange }: TaskLis
           </DropdownMenu>
         </div>
 
-        <div className="min-w-0 flex-1 space-y-1">
-          <p
-            className={cn(
-              'text-sm font-medium text-foreground',
-              task.status === 'done' && 'text-muted-foreground line-through',
-            )}
-          >
-            {task.title}
-          </p>
-          {task.description ? (
-            <p className="text-sm text-muted-foreground">{task.description}</p>
+        <div className="flex min-w-0 flex-1 items-center gap-3">
+          <div className="min-w-0 flex-1 space-y-1">
+            <p
+              className={cn(
+                'text-sm font-medium text-foreground',
+                task.status === 'done' && 'text-muted-foreground line-through',
+              )}
+            >
+              {task.title}
+            </p>
+            {task.description ? (
+              <p className="text-sm text-muted-foreground">{task.description}</p>
+            ) : null}
+          </div>
+          {task.tags.length > 0 ? (
+            <div className="flex shrink-0 flex-wrap justify-end gap-1.5">
+              {task.tags.map((tag) => (
+                <span
+                  key={tag}
+                  className="rounded-md border border-border bg-secondary px-2 py-0.5 text-[11px] font-medium text-muted-foreground"
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
           ) : null}
         </div>
       </div>

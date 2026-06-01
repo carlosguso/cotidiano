@@ -6,6 +6,7 @@ export type Task = {
   title: string;
   description: string;
   status: TaskStatus;
+  tags: string[];
   createdAt: string;
   updatedAt: string;
 };
@@ -15,6 +16,7 @@ export type CreateTaskInput = {
   title: string;
   description?: string;
   status?: TaskStatus;
+  tags?: string[];
 };
 
-export type UpdateTaskInput = Partial<Pick<Task, 'title' | 'description' | 'status'>>;
+export type UpdateTaskInput = Partial<Pick<Task, 'title' | 'description' | 'status' | 'tags'>>;
