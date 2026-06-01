@@ -2,6 +2,7 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { ProjectsProvider, useProjects } from '@renderer/context/ProjectsContext';
 import { createMockProject } from '@renderer/test/fixtures/projects';
+import { installInMemoryElectronAPI } from '@renderer/test/in-memory-electron-api';
 
 describe('ProjectsContext', () => {
   it('throws when used outside the provider', () => {
@@ -122,27 +123,7 @@ describe('ProjectsContext', () => {
 
   it('loads projects from the database API on mount', async () => {
     const stored = createMockProject({ id: 'stored-1', name: 'Stored Project' });
-    window.electronAPI = {
-      platform: 'darwin',
-      projects: {
-        list: async () => [stored],
-        create: async () => stored,
-        update: async () => stored,
-        delete: async () => undefined,
-      },
-      tasks: {
-        list: async () => [],
-        create: async () => {
-          throw new Error('not implemented');
-        },
-        import: async () => [],
-        update: async () => {
-          throw new Error('not implemented');
-        },
-        delete: async () => undefined,
-        deleteByProject: async () => undefined,
-      },
-    };
+    installInMemoryElectronAPI({ projects: [stored] });
 
     const { result } = renderHook(() => useProjects(), {
       wrapper: ProjectsProvider,
@@ -155,7 +136,43 @@ describe('ProjectsContext', () => {
     });
 
     expect(result.current.projects).toEqual([stored]);
+  });
 
-    window.electronAPI = undefined as unknown as Window['electronAPI'];
+  it('persists create, update, and delete through the database API', async () => {
+    installInMemoryElectronAPI();
+
+    const { result } = renderHook(() => useProjects(), {
+      wrapper: ProjectsProvider,
+    });
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    await act(async () => {
+      await result.current.createProject({
+        name: 'API Project',
+        identifier: 'api',
+      });
+    });
+
+    const projectId = result.current.projects[0].id;
+
+    await act(async () => {
+      await result.current.updateProject(projectId, { name: 'Renamed API Project' });
+    });
+
+    expect(result.current.projects[0].name).toBe('Renamed API Project');
+
+    const listed = await window.electronAPI.projects.list();
+    expect(listed).toHaveLength(1);
+    expect(listed[0].name).toBe('Renamed API Project');
+
+    await act(async () => {
+      await result.current.deleteProject(projectId);
+    });
+
+    expect(result.current.projects).toHaveLength(0);
+    expect(await window.electronAPI.projects.list()).toHaveLength(0);
   });
 });

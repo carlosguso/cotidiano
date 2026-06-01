@@ -1,9 +1,11 @@
 import '@testing-library/jest-dom/vitest';
 import { cleanup } from '@testing-library/react';
 import { afterEach, vi } from 'vitest';
+import { clearElectronAPI } from '@renderer/test/in-memory-electron-api';
 
 afterEach(() => {
   cleanup();
+  clearElectronAPI();
 });
 
 class ResizeObserverMock {

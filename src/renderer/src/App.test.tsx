@@ -4,7 +4,7 @@ import App from '@renderer/App';
 import { renderWithProviders } from '@renderer/test/test-utils';
 
 describe('App integration', () => {
-  it('creates a project through the full UI flow', async () => {
+  it('creates a project through the full UI flow (in-memory state)', async () => {
     const { user } = renderWithProviders(<App />);
 
     expect(screen.getByText('Select a project')).toBeInTheDocument();
@@ -24,6 +24,28 @@ describe('App integration', () => {
 
     expect(screen.getByText('Main company website')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /Website Refresh/ })).toBeInTheDocument();
+  });
+
+  it('creates a project through the IPC-backed in-memory database', async () => {
+    const { user } = renderWithProviders(<App />, { useInMemoryElectronAPI: true });
+
+    await waitFor(() => {
+      expect(screen.getByText('No projects yet')).toBeInTheDocument();
+    });
+
+    await user.click(screen.getByRole('button', { name: 'Create project' }));
+    await user.type(await screen.findByLabelText('Name'), 'Persisted Project');
+    await user.clear(screen.getByLabelText('Identifier'));
+    await user.type(screen.getByLabelText('Identifier'), 'PST');
+    await user.click(screen.getByRole('button', { name: 'Create project' }));
+
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: 'Persisted Project' })).toBeInTheDocument();
+    });
+
+    const projects = await window.electronAPI.projects.list();
+    expect(projects).toHaveLength(1);
+    expect(projects[0].identifier).toBe('PST');
   });
 
   it('selects an existing project from the sidebar', async () => {

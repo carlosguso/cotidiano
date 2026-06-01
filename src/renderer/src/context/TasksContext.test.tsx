@@ -2,6 +2,7 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 import { TasksProvider, useTasks } from '@renderer/context/TasksContext';
 import { createMockTask } from '@renderer/test/fixtures/tasks';
+import { installInMemoryElectronAPI } from '@renderer/test/in-memory-electron-api';
 
 describe('TasksContext', () => {
   it('throws when used outside the provider', () => {
@@ -269,27 +270,7 @@ describe('TasksContext', () => {
 
   it('loads tasks from the database API on mount', async () => {
     const stored = createMockTask({ id: 'stored-1', title: 'Stored task' });
-    window.electronAPI = {
-      platform: 'darwin',
-      projects: {
-        list: async () => [],
-        create: async () => {
-          throw new Error('not implemented');
-        },
-        update: async () => {
-          throw new Error('not implemented');
-        },
-        delete: async () => undefined,
-      },
-      tasks: {
-        list: async () => [stored],
-        create: async () => stored,
-        import: async () => [stored],
-        update: async () => stored,
-        delete: async () => undefined,
-        deleteByProject: async () => undefined,
-      },
-    };
+    installInMemoryElectronAPI({ tasks: [stored] });
 
     const { result } = renderHook(() => useTasks(), {
       wrapper: TasksProvider,
@@ -302,7 +283,47 @@ describe('TasksContext', () => {
     });
 
     expect(result.current.tasks).toEqual([stored]);
+  });
 
-    window.electronAPI = undefined as unknown as Window['electronAPI'];
+  it('persists create, update, and delete through the database API', async () => {
+    installInMemoryElectronAPI();
+
+    const { result } = renderHook(() => useTasks(), {
+      wrapper: TasksProvider,
+    });
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    await act(async () => {
+      await result.current.createTask({
+        projectId: 'project-1',
+        title: 'API task',
+        tags: ['alpha', 'ALPHA'],
+      });
+    });
+
+    const taskId = result.current.tasks[0].id;
+    expect(result.current.tasks[0].tags).toEqual(['alpha']);
+
+    await act(async () => {
+      await result.current.updateTask(taskId, {
+        title: 'Updated API task',
+        status: 'done',
+      });
+    });
+
+    expect(result.current.tasks[0].title).toBe('Updated API task');
+
+    const listed = await window.electronAPI.tasks.list();
+    expect(listed[0].status).toBe('done');
+
+    await act(async () => {
+      await result.current.deleteTask(taskId);
+    });
+
+    expect(result.current.tasks).toHaveLength(0);
+    expect(await window.electronAPI.tasks.list()).toHaveLength(0);
   });
 });
