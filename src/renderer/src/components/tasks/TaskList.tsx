@@ -1,11 +1,17 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Plus } from 'lucide-react';
 import { useTasks } from '@renderer/context/TasksContext';
 import { TaskListItem } from '@renderer/components/tasks/TaskListItem';
 import { TaskModal } from '@renderer/components/tasks/TaskModal';
 import { ConfirmModal } from '@/components/ui/ConfirmModal';
 import { Button } from '@/components/ui/button';
-import type { Task } from '@renderer/types/task';
+import {
+  TASK_STATUSES,
+  TASK_STATUS_LABELS,
+  TASK_STATUS_SECTION_STYLES,
+} from '@renderer/lib/taskStatus';
+import { cn } from '@/lib/utils';
+import type { Task, TaskStatus } from '@renderer/types/task';
 
 type TaskListProps = {
   projectId: string;
@@ -18,6 +24,18 @@ export function TaskList({ projectId }: TaskListProps) {
   const [deletingTask, setDeletingTask] = useState<Task | null>(null);
 
   const tasks = tasksForProject(projectId);
+
+  const tasksByStatus = useMemo(() => {
+    const grouped = Object.fromEntries(
+      TASK_STATUSES.map((status) => [status, [] as Task[]]),
+    ) as Record<TaskStatus, Task[]>;
+
+    for (const task of tasks) {
+      grouped[task.status].push(task);
+    }
+
+    return grouped;
+  }, [tasks]);
 
   useEffect(() => {
     setCreateModalOpen(false);
@@ -32,7 +50,7 @@ export function TaskList({ projectId }: TaskListProps) {
   };
 
   return (
-    <section className="space-y-3">
+    <section className="space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-medium text-foreground">Tasks</h2>
         <Button type="button" variant="outline" size="sm" onClick={() => setCreateModalOpen(true)}>
@@ -41,22 +59,46 @@ export function TaskList({ projectId }: TaskListProps) {
         </Button>
       </div>
 
-      {tasks.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-border px-4 py-8 text-center">
-          <p className="text-sm text-muted-foreground">No tasks yet</p>
-        </div>
-      ) : (
-        <div className="space-y-2">
-          {tasks.map((task) => (
-            <TaskListItem
-              key={task.id}
-              task={task}
-              onEdit={setEditingTask}
-              onDelete={setDeletingTask}
-            />
-          ))}
-        </div>
-      )}
+      <div className="space-y-5">
+        {TASK_STATUSES.map((status) => {
+          const sectionTasks = tasksByStatus[status];
+          const styles = TASK_STATUS_SECTION_STYLES[status];
+
+          return (
+            <section
+              key={status}
+              aria-labelledby={`task-status-${status}`}
+              className="space-y-2"
+            >
+              <div className="flex items-center gap-2 border-b border-border pb-2">
+                <span className={cn('size-2 rounded-full', styles.dot)} aria-hidden="true" />
+                <h3
+                  id={`task-status-${status}`}
+                  className={cn('text-xs font-semibold uppercase tracking-wide', styles.label)}
+                >
+                  {TASK_STATUS_LABELS[status]}
+                </h3>
+                <span className="text-xs text-muted-foreground">{sectionTasks.length}</span>
+              </div>
+
+              {sectionTasks.length === 0 ? (
+                <p className="px-1 py-2 text-sm text-muted-foreground">No tasks</p>
+              ) : (
+                <div className="divide-y divide-border rounded-lg border border-border">
+                  {sectionTasks.map((task) => (
+                    <TaskListItem
+                      key={task.id}
+                      task={task}
+                      onEdit={setEditingTask}
+                      onDelete={setDeletingTask}
+                    />
+                  ))}
+                </div>
+              )}
+            </section>
+          );
+        })}
+      </div>
 
       <TaskModal
         open={createModalOpen}
