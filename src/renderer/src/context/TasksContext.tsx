@@ -12,10 +12,13 @@ import { normalizeTags } from '@renderer/lib/taskTags';
 type TasksContextValue = {
   tasks: Task[];
   tasksForProject: (projectId: string) => Task[];
+  archivedTasksForProject: (projectId: string) => Task[];
   tagsForProject: (projectId: string) => string[];
   createTask: (input: CreateTaskInput) => Task;
   importTasks: (projectId: string, inputs: Omit<CreateTaskInput, 'projectId'>[]) => number;
   updateTask: (taskId: string, input: UpdateTaskInput) => void;
+  archiveTask: (taskId: string) => void;
+  restoreTask: (taskId: string) => void;
   deleteTask: (taskId: string) => void;
   deleteTasksForProject: (projectId: string) => void;
 };
@@ -42,7 +45,15 @@ export function TasksProvider({
   const tasksForProject = useCallback(
     (projectId: string) =>
       tasks
-        .filter((task) => task.projectId === projectId)
+        .filter((task) => task.projectId === projectId && !task.archived)
+        .sort((a, b) => a.createdAt.localeCompare(b.createdAt)),
+    [tasks],
+  );
+
+  const archivedTasksForProject = useCallback(
+    (projectId: string) =>
+      tasks
+        .filter((task) => task.projectId === projectId && task.archived)
         .sort((a, b) => a.createdAt.localeCompare(b.createdAt)),
     [tasks],
   );
@@ -50,7 +61,7 @@ export function TasksProvider({
   const tagsForProject = useCallback(
     (projectId: string) => {
       const tags = tasks
-        .filter((task) => task.projectId === projectId)
+        .filter((task) => task.projectId === projectId && !task.archived)
         .flatMap((task) => task.tags);
 
       return normalizeTags(tags).sort((a, b) => a.localeCompare(b));
@@ -67,6 +78,7 @@ export function TasksProvider({
       description: input.description?.trim() ?? '',
       status: input.status ?? 'todo',
       tags: normalizeTags(input.tags ?? []),
+      archived: false,
       createdAt: timestamp,
       updatedAt: timestamp,
     };
@@ -87,6 +99,7 @@ export function TasksProvider({
         description: input.description?.trim() ?? '',
         status: input.status ?? 'todo',
         tags: normalizeTags(input.tags ?? []),
+        archived: false,
         createdAt: timestamp,
         updatedAt: timestamp,
       }));
@@ -108,11 +121,20 @@ export function TasksProvider({
           title: input.title?.trim() ?? task.title,
           description: input.description?.trim() ?? task.description,
           tags: input.tags !== undefined ? normalizeTags(input.tags) : task.tags,
+          archived: input.archived !== undefined ? input.archived : task.archived,
           updatedAt: now(),
         };
       }),
     );
   }, []);
+
+  const archiveTask = useCallback((taskId: string) => {
+    updateTask(taskId, { archived: true });
+  }, [updateTask]);
+
+  const restoreTask = useCallback((taskId: string) => {
+    updateTask(taskId, { archived: false });
+  }, [updateTask]);
 
   const deleteTask = useCallback((taskId: string) => {
     setTasks((current) => current.filter((task) => task.id !== taskId));
@@ -126,14 +148,29 @@ export function TasksProvider({
     () => ({
       tasks,
       tasksForProject,
+      archivedTasksForProject,
       tagsForProject,
       createTask,
       importTasks,
       updateTask,
+      archiveTask,
+      restoreTask,
       deleteTask,
       deleteTasksForProject,
     }),
-    [tasks, tasksForProject, tagsForProject, createTask, importTasks, updateTask, deleteTask, deleteTasksForProject],
+    [
+      tasks,
+      tasksForProject,
+      archivedTasksForProject,
+      tagsForProject,
+      createTask,
+      importTasks,
+      updateTask,
+      archiveTask,
+      restoreTask,
+      deleteTask,
+      deleteTasksForProject,
+    ],
   );
 
   return <TasksContext.Provider value={value}>{children}</TasksContext.Provider>;

@@ -8,6 +8,7 @@ export function createMockTask(overrides: Partial<Task> = {}): Task {
     description: 'Draft hero and feature sections',
     status: 'todo',
     tags: [],
+    archived: false,
     createdAt: '2024-06-01T12:00:00.000Z',
     updatedAt: '2024-06-01T12:00:00.000Z',
     ...overrides,

@@ -122,6 +122,28 @@ describe('TaskList', () => {
     expect(await screen.findByRole('heading', { name: 'Edit task' })).toBeInTheDocument();
   });
 
+  it('archives a task after confirmation', async () => {
+    const project = createMockProject();
+    const task = createMockTask({ projectId: project.id });
+    const { user } = renderWithProviders(<TaskList projectId={project.id} />, {
+      initialProjects: [project],
+      initialSelectedProjectId: project.id,
+      initialTasks: [task],
+    });
+
+    const todoSection = screen.getByRole('region', { name: 'To do' });
+    expect(within(todoSection).getByText('Write landing page copy')).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Task actions for Write landing page copy' }));
+    await user.click(screen.getByRole('menuitem', { name: /Archive/ }));
+    await user.click(await screen.findByRole('button', { name: 'Archive task' }));
+
+    await waitFor(() => {
+      expect(within(todoSection).queryByText('Write landing page copy')).not.toBeInTheDocument();
+    });
+    expect(screen.queryByRole('region', { name: 'Archived' })).not.toBeInTheDocument();
+  });
+
   it('deletes a task after confirmation', async () => {
     const project = createMockProject();
     const task = createMockTask({ projectId: project.id });

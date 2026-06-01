@@ -7,6 +7,7 @@ export type Task = {
   description: string;
   status: TaskStatus;
   tags: string[];
+  archived: boolean;
   createdAt: string;
   updatedAt: string;
 };
@@ -19,4 +20,6 @@ export type CreateTaskInput = {
   tags?: string[];
 };
 
-export type UpdateTaskInput = Partial<Pick<Task, 'title' | 'description' | 'status' | 'tags'>>;
+export type UpdateTaskInput = Partial<
+  Pick<Task, 'title' | 'description' | 'status' | 'tags' | 'archived'>
+>;

@@ -1,4 +1,4 @@
-import { Check, MoreVertical, Pencil, Trash2 } from 'lucide-react';
+import { Archive, Check, MoreVertical, Pencil, Trash2 } from 'lucide-react';
 import type { Task, TaskStatus } from '@renderer/types/task';
 import {
   TASK_STATUSES,
@@ -18,10 +18,17 @@ type TaskListItemProps = {
   task: Task;
   onEdit: (task: Task) => void;
   onDelete: (task: Task) => void;
+  onArchive: (task: Task) => void;
   onStatusChange: (task: Task, status: TaskStatus) => void;
 };
 
-export function TaskListItem({ task, onEdit, onDelete, onStatusChange }: TaskListItemProps) {
+export function TaskListItem({
+  task,
+  onEdit,
+  onDelete,
+  onArchive,
+  onStatusChange,
+}: TaskListItemProps) {
   const statusStyles = TASK_STATUS_SECTION_STYLES[task.status];
 
   return (
@@ -104,6 +111,10 @@ export function TaskListItem({ task, onEdit, onDelete, onStatusChange }: TaskLis
           <DropdownMenuItem onClick={() => onEdit(task)}>
             <Pencil />
             Edit
+          </DropdownMenuItem>
+          <DropdownMenuItem onClick={() => onArchive(task)}>
+            <Archive />
+            Archive
           </DropdownMenuItem>
           <DropdownMenuItem variant="destructive" onClick={() => onDelete(task)}>
             <Trash2 />

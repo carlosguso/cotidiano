@@ -32,6 +32,7 @@ describe('TasksContext', () => {
       description: 'Wireframe the hero section',
       status: 'in_progress',
       tags: [],
+      archived: false,
     });
   });
 
@@ -185,6 +186,51 @@ describe('TasksContext', () => {
       'Task A',
       'Task B',
     ]);
+  });
+
+  it('excludes archived tasks from tasksForProject', () => {
+    const active = createMockTask({ id: 'task-active', title: 'Active task' });
+    const archived = createMockTask({
+      id: 'task-archived',
+      title: 'Archived task',
+      archived: true,
+    });
+
+    const { result } = renderHook(() => useTasks(), {
+      wrapper: ({ children }) => (
+        <TasksProvider initialTasks={[active, archived]}>{children}</TasksProvider>
+      ),
+    });
+
+    expect(result.current.tasksForProject('project-1').map((task) => task.title)).toEqual([
+      'Active task',
+    ]);
+    expect(result.current.archivedTasksForProject('project-1').map((task) => task.title)).toEqual([
+      'Archived task',
+    ]);
+  });
+
+  it('archives and restores a task', () => {
+    const task = createMockTask();
+    const { result } = renderHook(() => useTasks(), {
+      wrapper: ({ children }) => (
+        <TasksProvider initialTasks={[task]}>{children}</TasksProvider>
+      ),
+    });
+
+    act(() => {
+      result.current.archiveTask(task.id);
+    });
+
+    expect(result.current.tasks[0].archived).toBe(true);
+    expect(result.current.tasksForProject('project-1')).toHaveLength(0);
+
+    act(() => {
+      result.current.restoreTask(task.id);
+    });
+
+    expect(result.current.tasks[0].archived).toBe(false);
+    expect(result.current.tasksForProject('project-1')).toHaveLength(1);
   });
 
   it('deletes a task', () => {

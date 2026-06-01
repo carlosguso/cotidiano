@@ -25,11 +25,12 @@ type TaskListProps = {
 };
 
 export function TaskList({ projectId }: TaskListProps) {
-  const { tasksForProject, deleteTask, updateTask } = useTasks();
+  const { tasksForProject, deleteTask, updateTask, archiveTask } = useTasks();
   const [createModalOpen, setCreateModalOpen] = useState(false);
   const [importModalOpen, setImportModalOpen] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [deletingTask, setDeletingTask] = useState<Task | null>(null);
+  const [archivingTask, setArchivingTask] = useState<Task | null>(null);
 
   const tasks = tasksForProject(projectId);
 
@@ -50,12 +51,19 @@ export function TaskList({ projectId }: TaskListProps) {
     setImportModalOpen(false);
     setEditingTask(null);
     setDeletingTask(null);
+    setArchivingTask(null);
   }, [projectId]);
 
   const handleDelete = () => {
     if (!deletingTask) return;
     deleteTask(deletingTask.id);
     setDeletingTask(null);
+  };
+
+  const handleArchive = () => {
+    if (!archivingTask) return;
+    archiveTask(archivingTask.id);
+    setArchivingTask(null);
   };
 
   return (
@@ -120,6 +128,7 @@ export function TaskList({ projectId }: TaskListProps) {
                       task={task}
                       onEdit={setEditingTask}
                       onDelete={setDeletingTask}
+                      onArchive={setArchivingTask}
                       onStatusChange={(taskToUpdate, status) =>
                         updateTask(taskToUpdate.id, { status })
                       }
@@ -148,6 +157,15 @@ export function TaskList({ projectId }: TaskListProps) {
         open={editingTask !== null}
         task={editingTask}
         onClose={() => setEditingTask(null)}
+      />
+
+      <ConfirmModal
+        open={archivingTask !== null}
+        title={`Archive ${archivingTask?.title ?? 'task'}?`}
+        description="This task will be archived and hidden from the list until archive views are available."
+        confirmLabel="Archive task"
+        onClose={() => setArchivingTask(null)}
+        onConfirm={handleArchive}
       />
 
       <ConfirmModal
