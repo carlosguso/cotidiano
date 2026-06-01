@@ -1,5 +1,6 @@
 import { app, BrowserWindow } from 'electron';
 import { join } from 'path';
+import { initDatabase, pingDatabase, resolveDatabasePath } from './db';
 
 const APP_BACKGROUND = '#09090b';
 
@@ -28,6 +29,11 @@ function createWindow(): void {
 }
 
 app.whenReady().then(() => {
+  const db = initDatabase(resolveDatabasePath());
+  if (!pingDatabase(db)) {
+    throw new Error('Database connection check failed');
+  }
+
   createWindow();
 
   app.on('activate', () => {
