@@ -99,6 +99,40 @@ describe('TodosContext', () => {
     });
   });
 
+  it('assigns unique positions after items are deleted', async () => {
+    const list = createMockTodoList();
+    const itemA = createMockTodoItem({ id: 'item-a', position: 0 });
+    const itemB = createMockTodoItem({ id: 'item-b', position: 1, title: 'Second' });
+
+    const { result } = renderHook(() => useTodos(), {
+      wrapper: ({ children }) => (
+        <TasksProvider>
+          <TodosProvider
+            initialTodoLists={[list]}
+            initialTodoItems={[itemA, itemB]}
+            initialSelectedTodoListId={list.id}
+          >
+            {children}
+          </TodosProvider>
+        </TasksProvider>
+      ),
+    });
+
+    await act(async () => {
+      await result.current.deleteTodoItem('item-a');
+    });
+
+    await act(async () => {
+      await result.current.createTodoItem({
+        todoListId: list.id,
+        title: 'Third',
+      });
+    });
+
+    const positions = result.current.itemsForList(list.id).map((item) => item.position);
+    expect(positions.sort((a, b) => a - b)).toEqual([1, 2]);
+  });
+
   it('updates and deletes todo lists and items', async () => {
     const list = createMockTodoList();
     const item = createMockTodoItem();

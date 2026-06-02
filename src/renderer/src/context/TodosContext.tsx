@@ -50,6 +50,13 @@ function hasTodosApi(): boolean {
   return typeof window.electronAPI?.todos !== 'undefined';
 }
 
+function nextTodoItemPosition(items: TodoItemWithTask[], todoListId: string): number {
+  const positions = items
+    .filter((item) => item.todoListId === todoListId)
+    .map((item) => item.position);
+  return (positions.length === 0 ? -1 : Math.max(...positions)) + 1;
+}
+
 function resolveLinkedTask(taskId: string | null, tasks: Task[]): TodoItemWithTask['task'] {
   if (!taskId) return null;
   return tasks.find((task) => task.id === taskId) ?? null;
@@ -239,8 +246,7 @@ export function TodosProvider({
 
       const timestamp = now();
       const position =
-        input.position ??
-        todoItems.filter((item) => item.todoListId === input.todoListId).length;
+        input.position ?? nextTodoItemPosition(todoItems, input.todoListId);
       const linkedTask = resolveLinkedTask(input.taskId ?? null, tasks);
 
       if (!input.taskId && !input.title?.trim()) {
