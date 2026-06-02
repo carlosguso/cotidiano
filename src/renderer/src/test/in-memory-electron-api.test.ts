@@ -44,6 +44,32 @@ describe('createInMemoryElectronAPI', () => {
     expect(await api.todos.listItems(list.id)).toHaveLength(0);
   });
 
+  it('rejects title changes on task-linked todo items', async () => {
+    const api = createInMemoryElectronAPI({
+      projects: [createMockProject({ id: 'project-1' })],
+      tasks: [
+        {
+          id: 'task-1',
+          projectId: 'project-1',
+          title: 'Ship feature',
+          description: '',
+          status: 'todo',
+          tags: [],
+          archived: false,
+          createdAt: '2024-01-01T00:00:00.000Z',
+          updatedAt: '2024-01-01T00:00:00.000Z',
+        },
+      ],
+    });
+
+    const list = await api.todos.createList({ name: 'Today' });
+    const linked = await api.todos.createItem({ todoListId: list.id, taskId: 'task-1' });
+
+    await expect(
+      api.todos.updateItem(linked.id, { title: 'Renamed' }),
+    ).rejects.toThrow('Cannot change title of a task-linked todo item');
+  });
+
   it('deduplicates tags on create', async () => {
     const api = createInMemoryElectronAPI();
     const task = await api.tasks.create({

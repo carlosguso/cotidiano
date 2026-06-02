@@ -249,26 +249,53 @@ export function createInMemoryElectronAPI(seed?: {
           throw new Error(`Todo item not found: ${id}`);
         }
 
-        const current = todoItems[index];
-        const taskId = input.taskId !== undefined ? input.taskId : current.taskId;
-        const linkedTask = resolveTodoItemTask(taskId, tasks);
+        const existing = todoItems[index];
+        let taskId = existing.taskId;
+        let title = existing.title;
+        let linkedTask: Task | null = null;
 
-        if (input.taskId && !linkedTask) {
-          throw new Error(`Task not found: ${input.taskId}`);
+        if (input.taskId !== undefined) {
+          taskId = input.taskId;
+
+          if (taskId) {
+            linkedTask = resolveTodoItemTask(taskId, tasks);
+            if (!linkedTask) {
+              throw new Error(`Task not found: ${taskId}`);
+            }
+            title = linkedTask.title;
+          } else {
+            title = input.title?.trim() ?? existing.title;
+            if (!title) {
+              throw new Error('Todo item title is required when not linking a task');
+            }
+          }
+        } else if (input.title !== undefined) {
+          if (existing.taskId) {
+            throw new Error('Cannot change title of a task-linked todo item');
+          }
+          title = input.title.trim();
+          if (!title) {
+            throw new Error('Todo item title cannot be empty');
+          }
+        } else if (existing.taskId) {
+          linkedTask = resolveTodoItemTask(existing.taskId, tasks);
+          title = linkedTask?.title ?? existing.title;
         }
 
         const updated: TodoItemWithTask = {
-          ...current,
-          ...input,
+          ...existing,
           taskId,
-          title:
-            linkedTask?.title ??
-            (input.title !== undefined ? input.title.trim() : current.title),
-          completed: input.completed !== undefined ? input.completed : current.completed,
-          position: input.position !== undefined ? input.position : current.position,
-          task: linkedTask,
+          title,
+          completed: input.completed !== undefined ? input.completed : existing.completed,
+          position: input.position !== undefined ? input.position : existing.position,
           updatedAt: now(),
+          task: linkedTask,
         };
+
+        if (!linkedTask && updated.taskId) {
+          updated.task = resolveTodoItemTask(updated.taskId, tasks);
+        }
+
         todoItems = todoItems.map((item) => (item.id === id ? updated : item));
         return updated;
       },
